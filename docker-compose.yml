@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend/FinanceTrackerAPI
+    ports:
+      - "5000:80"  # Expose backend on port 5000
+    depends_on:
+      - db
+  
+  frontend:
+    build:
+      context: ./frontend/financetrackerapp
+    ports:
+      - "3000:3000"  # Expose frontend on port 3000
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: finance_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

@@ -1,0 +1,17 @@
+# Use Node.js official image
+FROM node:16 AS base
+WORKDIR /app
+EXPOSE 3000
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy all files
+COPY . .
+
+# Build the app
+RUN npm run build
+
+# Start the app
+CMD ["npm", "start"]
