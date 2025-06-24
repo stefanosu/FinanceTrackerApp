@@ -1,6 +1,3 @@
-# FinanceTrackerApp
-
-
 # 💰 Personal Finance Tracker
 
 A full-stack personal finance budgeting app to help users track expenses, visualize spending trends, and manage their financial goals.
