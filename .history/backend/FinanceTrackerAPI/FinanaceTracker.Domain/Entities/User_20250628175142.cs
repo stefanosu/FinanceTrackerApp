@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
 {
@@ -14,19 +17,5 @@ namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
         public required DateTime UpdatedAt { get; set; }
         public required string Token { get; set; }
         public required string RefreshToken { get; set; }
-
-        public User(int id, string firstName, string lastName, string email, string password, string role, DateTime createdAt, DateTime updatedAt, string token, string refreshToken)
-        {
-            Id = id;
-            FirstName = firstName;
-            LastName = lastName;
-            Email = email;
-            Password = password;
-            Role = role;
-            CreatedAt = createdAt;
-            UpdatedAt = updatedAt;
-            Token = token;
-            RefreshToken = refreshToken;
-        }
     }
-}
+}   

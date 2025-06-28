@@ -1,6 +1,5 @@
-using System;
 
-namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
+namespace FinanceTrackerAPI.FinanaceTracker.Domain.Entities
 {
     public class Expense
     {
@@ -13,21 +12,6 @@ namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
         public required string SubCategory { get; set; }
         public required string PaymentMethod { get; set; }
         public required string Notes { get; set; }
-        public required int UserId { get; set; }
-
-        public Expense(int id, string name, string description, decimal amount, DateTime date, string category, string subCategory, string paymentMethod, string notes, int userId)
-        {
-            Id = id;
-            Name = name;
-            Description = description;
-            Amount = amount;
-            Date = date;
-            Category = category;
-            SubCategory = subCategory;
-            PaymentMethod = paymentMethod;
-            Notes = notes;
-            UserId = userId;
-        }
     }
 
     public class ExpenseCategory
