@@ -22,10 +22,14 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             _context = context;
         }
 
-        [HttpGet]
-        public IActionResult GetUser(User user) 
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserByIdAsync(int userId) 
         {
-            return Ok("Users");
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+                
+            return Ok(user);
         }
 
         [HttpGet("all")]
