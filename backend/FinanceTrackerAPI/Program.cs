@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Register Swagger services before building the app
@@ -6,6 +8,10 @@ builder.Services.AddSwaggerGen();            // Register Swagger generator
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+//Adding Data to DB
+builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 

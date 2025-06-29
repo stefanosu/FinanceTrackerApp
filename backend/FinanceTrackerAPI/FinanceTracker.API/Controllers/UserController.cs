@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinanceTrackerAPI.FinanceTracker.API
 {
@@ -12,9 +13,12 @@ namespace FinanceTrackerAPI.FinanceTracker.API
     public class UserController : ControllerBase
     {
         private readonly ILogger<UserController> _logger;
+        private readonly FinanceTrackerDbContext _context;
 
-        public UserController(ILogger<UserController> logger) {
+        public UserController(ILogger<UserController> logger, FinanceTrackerDbContext context)
+        {
             _logger = logger;
+            _context = context;
         }
 
         [HttpGet]
@@ -24,31 +28,33 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         }
 
         [HttpPost]
-        public IActionResult CreateUser(User user) 
+        public async Task<IActionResult> CreateUser(User user)
         {
-            if (user == null)  
-            {
+            if (user == null)
                 return BadRequest("User cannot be null.");
-            }
 
-            // Example: create a new user instance (copying properties)
-            var newUser = new User
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(user);
+        }
+
+        [HttpPatch] 
+        public IActionResult UpdateUser(User user) 
+        {
+            if(user.Id == user.Id) 
             {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Password = user.Password,
-                Role = user.Role,
-                CreatedAt = user.CreatedAt,
-                UpdatedAt = user.UpdatedAt,
-                Token = user.Token,
-                RefreshToken = user.RefreshToken
-            };
-
-            // You would typically save newUser to the database here
-
-            return Ok(newUser);
+                //update a user with updated user attrs and save that user obj to db
+                var updatedUser = User(user);
+            }
         }
     }
+}
+
+public class FinanceTrackerDbContext : DbContext
+{
+    public FinanceTrackerDbContext(DbContextOptions<FinanceTrackerDbContext> options)
+        : base(options) { }
+
+    public DbSet<User> Users { get; set; }
 }
