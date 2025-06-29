@@ -16,6 +16,13 @@ builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
 
 var app = builder.Build();
 
+// Seed data
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<FinanceTrackerDbContext>();
+    await DataSeeder.SeedData(context);
+}
+
 // Configure Kestrel to listen on both HTTP and HTTPS ports
 app.Urls.Add("http://localhost:5280");  // HTTP
 app.Urls.Add("https://localhost:7280"); // HTTPS

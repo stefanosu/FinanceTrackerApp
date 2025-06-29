@@ -15,6 +15,8 @@ namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
         public required string Notes { get; set; }
         public required int UserId { get; set; }
 
+        public Expense() { }
+
         public Expense(int id, string name, string description, decimal amount, DateTime date, string category, string subCategory, string paymentMethod, string notes, int userId)
         {
             Id = id;

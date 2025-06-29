@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 
@@ -17,6 +13,5 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
         public DbSet<ExpenseCategory> ExpenseCategories { get; set; }
         public DbSet<ExpenseSubCategory> ExpenseSubCategories { get; set; }
         public DbSet<ExpensePaymentMethod> ExpensePaymentMethods { get; set; }
-        // Add more DbSets as needed
     }
-}
+} 

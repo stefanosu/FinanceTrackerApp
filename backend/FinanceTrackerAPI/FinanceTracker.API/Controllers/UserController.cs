@@ -28,6 +28,13 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             return Ok("Users");
         }
 
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _context.Users.ToListAsync();
+            return Ok(users);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateUser(User user)
         {
