@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,22 +40,33 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             return Ok(user);
         }
 
-        [HttpPatch] 
-        public IActionResult UpdateUser(User user) 
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser(User user) 
         {
-            if(user.Id == user.Id) 
+            if (user == null) 
             {
-                //update a user with updated user attrs and save that user obj to db
-                var updatedUser = User(user);
+                return BadRequest("User cannot be null.");
             }
+
+            var existingUser = await _context.Users.FindAsync(user.Id);
+            if (existingUser == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Update the existing user with new attributes
+            existingUser.FirstName = user.FirstName;
+            existingUser.LastName = user.LastName;
+            existingUser.Email = user.Email;
+            existingUser.Password = user.Password;
+            existingUser.Role = user.Role;
+            existingUser.UpdatedAt = DateTime.UtcNow;
+            existingUser.Token = user.Token;
+            existingUser.RefreshToken = user.RefreshToken;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(existingUser);
         }
     }
-}
-
-public class FinanceTrackerDbContext : DbContext
-{
-    public FinanceTrackerDbContext(DbContextOptions<FinanceTrackerDbContext> options)
-        : base(options) { }
-
-    public DbSet<User> Users { get; set; }
 }

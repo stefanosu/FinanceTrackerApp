@@ -1,3 +1,4 @@
+using FinanceTrackerAPI.FinanceTracker.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
