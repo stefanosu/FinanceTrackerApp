@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
@@ -27,6 +28,15 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         public IActionResult CreateExpense(Expense expense)
         {
             return Ok("Expense created");
+        }
+
+        public IActionResult EditExpense(Expense expense) 
+        {
+            return Ok ("Expense updated");
+        }
+
+        public IActionResult RemoveExpense(Expense expense) {
+            return Ok("Expense deleted");
         }
     }
 }

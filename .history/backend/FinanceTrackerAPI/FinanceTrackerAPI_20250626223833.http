@@ -1,6 +1,0 @@
-@FinanceTrackerAPI_HostAddress = http://localhost:5265
-
-GET {{FinanceTrackerAPI_HostAddress}}/
-Accept: application/json
-
-###

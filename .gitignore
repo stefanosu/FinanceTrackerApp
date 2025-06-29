@@ -1,0 +1,43 @@
+# === General ===
+.DS_Store
+*.pem
+*.log
+*.tmp
+*.tsbuildinfo
+*.suo
+*.user
+*.cache
+*.pdb
+*.dll
+*.bak
+.env*
+.history/
+
+# === Node.js & Next.js (Frontend) ===
+**/node_modules/
+**/.next/
+**/.out/
+**/.vercel/
+**/.pnp/
+**/.pnp.*
+**/yarn-debug.log*
+**/npm-debug.log*
+**/coverage/
+**/build/
+**/.env.local
+**/next-env.d.ts
+
+# Yarn-specific (if using Yarn Plug'n'Play or Berry)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# === .NET (Backend) ===
+**/bin/
+**/obj/
+**/TestResults/
+
+# === Ignore local gitignore backups ===
+!.gitignore
