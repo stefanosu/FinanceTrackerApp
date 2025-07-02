@@ -57,5 +57,18 @@ namespace FinanceTrackerAPI.FinanceTracker.API
                 return Ok(existingAccount);
         }
         
+        [HttpDelete]
+        [Route("{id}")]
+        
+        public async Task <IActionResult> DeleteAccount(int id) 
+        {
+            var existingAccount = await _context.Accounts.FindAsync(id);
+            if(existingAccount ==  null) 
+                return NotFound("Account not found.");
+
+                _context.Accounts.Remove(existingAccount);
+                await _context.SaveChangesAsync();
+                return Ok(existingAccount);
+        }
     }
 }
