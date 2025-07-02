@@ -38,5 +38,13 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             return Ok(category);
 
         }
+
+        [HttpPatch] 
+        [Route("{id}")]
+
+        public async Task void UpdateCategory(ExpenseCategory category)
+        {
+            
+        }
     }
 }
