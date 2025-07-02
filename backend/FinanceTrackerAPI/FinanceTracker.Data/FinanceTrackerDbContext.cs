@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+using FinanceTrackerAPI.FinanceTracker.API;
 
 namespace FinanceTrackerAPI.FinanceTracker.Data
 {
@@ -13,5 +14,6 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
         public DbSet<ExpenseCategory> ExpenseCategories { get; set; }
         public DbSet<ExpenseSubCategory> ExpenseSubCategories { get; set; }
         public DbSet<ExpensePaymentMethod> ExpensePaymentMethods { get; set; }
+        public DbSet<Account> Accounts { get; set; }
     }
 } 
