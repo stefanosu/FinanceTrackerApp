@@ -35,5 +35,17 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 
         }
 
+        [HttpPatch]
+        [Route("{id}")]
+        
+        public async Task <IActionResult>UpdateTransaction(int id, [FromBody] Transaction transaction)
+        {
+            var existingTransaction = await _context.Transactions.FindAsync(id);
+            if (existingTransaction != null)
+                return NotFound("Transaction not found.");
+                await _context.SaveChangesAsync();
+                return Ok(transaction);
+        }
+
     }
 }
