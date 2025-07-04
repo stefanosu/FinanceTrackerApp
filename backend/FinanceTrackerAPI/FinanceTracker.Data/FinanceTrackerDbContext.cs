@@ -15,5 +15,6 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
         public DbSet<ExpenseSubCategory> ExpenseSubCategories { get; set; }
         public DbSet<ExpensePaymentMethod> ExpensePaymentMethods { get; set; }
         public DbSet<Account> Accounts { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
     }
 } 
