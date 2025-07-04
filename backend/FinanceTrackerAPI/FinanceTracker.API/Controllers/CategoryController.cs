@@ -42,9 +42,31 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [HttpPatch] 
         [Route("{id}")]
 
-        public async Task void UpdateCategory(ExpenseCategory category)
+        public async Task<IActionResult> UpdateCategory( int id, [FromBody] ExpenseCategory category)
         {
-            
+            var existingCategory = await _context.ExpenseCategories.FindAsync(id); 
+            if (existingCategory == null)
+                return NotFound("Category not found."); 
+
+                existingCategory.Name = category.Name; 
+                existingCategory.Description = category.Description;
+                
+                await _context.SaveChangesAsync();
+                return Ok(existingCategory);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+
+        public async Task<IActionResult> DeleteCategory(int id) 
+        {
+            var existingCategory = await _context.ExpenseCategories.FindAsync(id);
+            if(existingCategory == null) 
+                return NotFound("Category not found.");
+
+                _context.ExpenseCategories.Remove(existingCategory);
+                await _context.SaveChangesAsync();
+                return Ok("Category deleted");
         }
     }
 }
