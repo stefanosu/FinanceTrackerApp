@@ -68,7 +68,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
 
                 _context.Accounts.Remove(existingAccount);
                 await _context.SaveChangesAsync();
-                return Ok(existingAccount);
+                return Ok("Removed Account");
         }
     }
 }
