@@ -11,10 +11,15 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class TransactionController : ControllerBase
-
     {
         private readonly ILogger<TransactionController> _logger;
         private readonly FinanceTrackerDbContext _context;
+
+        public TransactionController(ILogger<TransactionController> logger, FinanceTrackerDbContext context)
+        {
+            _logger = logger;
+            _context = context;
+        }
 
         [HttpGet]
         [Route("getAll")]
@@ -47,5 +52,17 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
                 return Ok(transaction);
         }
 
+        [HttpDelete]
+        [Route("{id}")]
+
+        public async Task <IActionResult>DeleteTransaction(int id) 
+        {
+            var existingTransaction = await _context.Transactions.FindAsync(id);
+            if(existingTransaction == null) 
+                return NotFound("Transaction not found.");
+                _context.Transactions.Remove(existingTransaction);
+                await _context.SaveChangesAsync();
+                return Ok("Transaction deleted.");
+        }
     }
 }
