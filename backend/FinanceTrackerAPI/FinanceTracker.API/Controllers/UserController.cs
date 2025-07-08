@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,18 +24,16 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         }
 
         [HttpGet("{userId}")]
-        [Route("{userId}")]
         public async Task<IActionResult> GetUserByIdAsync(int userId) 
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
-                return NotFound("User not found.");
+                throw new NotFoundException("User", userId);
                 
             return Ok(user);
         }
 
         [HttpGet("all")]
-        [Route("getAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _context.Users.ToListAsync();
@@ -42,11 +41,10 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         }
 
         [HttpPost]
-        [Route("createUser")]
-        public async Task<IActionResult> CreateUser(User user)
+        public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             if (user == null)
-                return BadRequest("User cannot be null.");
+                throw new ValidationException("User cannot be null.");
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -55,19 +53,14 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         }
 
         [HttpPut]
-        [Route("updateUser")]
-        public async Task<IActionResult> UpdateUser(User user) 
+        public async Task<IActionResult> UpdateUser([FromBody] User user) 
         {
-            if (user == null) 
-            {
-                return BadRequest("User cannot be null.");
-            }
+            if (user == null)
+                throw new ValidationException("User cannot be null.");
 
             var existingUser = await _context.Users.FindAsync(user.Id);
             if (existingUser == null)
-            {
-                return NotFound("User not found.");
-            }
+                throw new NotFoundException("User", user.Id);
 
             // Update the existing user with new attributes
             existingUser.FirstName = user.FirstName;
@@ -84,17 +77,16 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             return Ok(existingUser);
         }
 
-        [HttpDelete]
-        [Route("removeUser")]
-
-        public async Task<IActionResult>DeleteUser(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
         {
             var existingUser = await _context.Users.FindAsync(id);
             if (existingUser == null)
-                return NotFound("User not found");
-                _context.Users.Remove(existingUser);
-                await  _context.SaveChangesAsync();
-                return Ok("Removed User");
+                throw new NotFoundException("User", id);
+                
+            _context.Users.Remove(existingUser);
+            await _context.SaveChangesAsync();
+            return Ok("User deleted successfully.");
         }
     }
 }
