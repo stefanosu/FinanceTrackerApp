@@ -1,4 +1,5 @@
 using FinanceTrackerAPI.FinanceTracker.Data;
+using FinanceTrackerAPI.FinanceTracker.API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,9 @@ builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
+
+// Add global exception handler middleware
+app.UseMiddleware<GlobalExceptionHandler>();
 
 // Seed data
 using (var scope = app.Services.CreateScope())
