@@ -15,7 +15,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         private readonly ILogger<CategoryController> _logger;
         private readonly FinanceTrackerDbContext _context;
 
-        public CategoryController(ILogger<CategoryController> logger, FinanceTrackerDbContext context) 
+        public CategoryController(ILogger<CategoryController> logger, FinanceTrackerDbContext context)
         {
             _logger = logger;
             _context = context;
@@ -34,7 +34,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             if (category == null)
                 throw new ValidationException("Category cannot be null.");
 
-            await _context.ExpenseCategories.AddAsync(category); 
+            await _context.ExpenseCategories.AddAsync(category);
             await _context.SaveChangesAsync();
             return Ok(category);
         }
@@ -45,22 +45,22 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             if (category == null)
                 throw new ValidationException("Category cannot be null.");
 
-            var existingCategory = await _context.ExpenseCategories.FindAsync(id); 
+            var existingCategory = await _context.ExpenseCategories.FindAsync(id);
             if (existingCategory == null)
                 throw new NotFoundException("Category", id);
 
-            existingCategory.Name = category.Name; 
+            existingCategory.Name = category.Name;
             existingCategory.Description = category.Description;
-                
+
             await _context.SaveChangesAsync();
             return Ok(existingCategory);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCategory(int id) 
+        public async Task<IActionResult> DeleteCategory(int id)
         {
             var existingCategory = await _context.ExpenseCategories.FindAsync(id);
-            if (existingCategory == null) 
+            if (existingCategory == null)
                 throw new NotFoundException("Category", id);
 
             _context.ExpenseCategories.Remove(existingCategory);

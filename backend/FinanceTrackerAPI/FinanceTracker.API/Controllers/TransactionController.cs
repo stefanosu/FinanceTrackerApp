@@ -53,16 +53,16 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 
             // Update transaction properties here
             // existingTransaction.Property = transaction.Property;
-            
+
             await _context.SaveChangesAsync();
             return Ok(existingTransaction);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTransaction(int id) 
+        public async Task<IActionResult> DeleteTransaction(int id)
         {
             var existingTransaction = await _context.Transactions.FindAsync(id);
-            if (existingTransaction == null) 
+            if (existingTransaction == null)
                 throw new NotFoundException("Transaction", id);
 
             _context.Transactions.Remove(existingTransaction);

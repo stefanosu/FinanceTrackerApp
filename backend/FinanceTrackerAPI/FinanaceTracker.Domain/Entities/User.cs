@@ -15,7 +15,7 @@ namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
         public required string Token { get; set; }
         public required string RefreshToken { get; set; }
 
-        public User() {}
+        public User() { }
 
         public User(int id, string firstName, string lastName, string email, string password, string role, DateTime createdAt, DateTime updatedAt, string token, string refreshToken)
         {
