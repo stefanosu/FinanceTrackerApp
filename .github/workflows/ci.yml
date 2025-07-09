@@ -1,0 +1,64 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore backend/FinanceTrackerAPI/
+      
+    - name: Build
+      run: dotnet build backend/FinanceTrackerAPI/ --no-restore
+      
+    - name: Test
+      run: dotnet test backend/FinanceTrackerAPI/ --no-build --verbosity normal
+      
+    - name: Run code analysis
+      run: dotnet build backend/FinanceTrackerAPI/ --no-restore --verbosity normal /p:TreatWarningsAsErrors=true
+      
+  security:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Run security scan
+      run: dotnet list backend/FinanceTrackerAPI/ package --vulnerable
+      
+  lint:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Run code formatting check
+      run: dotnet format --verify-no-changes backend/FinanceTrackerAPI/ 
