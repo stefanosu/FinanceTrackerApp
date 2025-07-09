@@ -61,7 +61,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Middleware
                 default:
                     // Log the exception for debugging
                     _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
-                    
+
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     errorResponse.StatusCode = HttpStatusCode.InternalServerError;
                     errorResponse.Message = "An error occurred while processing your request.";
@@ -79,4 +79,4 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Middleware
         public string Message { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
-} 
+}

@@ -115,4 +115,4 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
             await context.SaveChangesAsync();
         }
     }
-} 
+}

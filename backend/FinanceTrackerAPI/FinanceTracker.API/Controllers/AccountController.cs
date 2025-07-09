@@ -19,7 +19,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         private readonly ILogger<AccountController> _logger;
         private readonly FinanceTrackerDbContext _context;
 
-        public AccountController(ILogger<AccountController> logger, FinanceTrackerDbContext context) 
+        public AccountController(ILogger<AccountController> logger, FinanceTrackerDbContext context)
         {
             _logger = logger;
             _context = context;
@@ -33,24 +33,24 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAccount([FromBody] Account account) 
+        public async Task<IActionResult> CreateAccount([FromBody] Account account)
         {
             if (account == null)
                 throw new ValidationException("Account cannot be null.");
 
-            await _context.Accounts.AddAsync(account); 
+            await _context.Accounts.AddAsync(account);
             await _context.SaveChangesAsync();
             return Ok(account);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccount(int id, [FromBody] Account account) 
+        public async Task<IActionResult> UpdateAccount(int id, [FromBody] Account account)
         {
             if (account == null)
                 throw new ValidationException("Account cannot be null.");
 
             var existingAccount = await _context.Accounts.FindAsync(id);
-            if (existingAccount == null) 
+            if (existingAccount == null)
                 throw new NotFoundException("Account", id);
 
             existingAccount.Name = account.Name;
@@ -60,12 +60,12 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             await _context.SaveChangesAsync();
             return Ok(existingAccount);
         }
-        
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAccount(int id) 
+        public async Task<IActionResult> DeleteAccount(int id)
         {
             var existingAccount = await _context.Accounts.FindAsync(id);
-            if (existingAccount == null) 
+            if (existingAccount == null)
                 throw new NotFoundException("Account", id);
 
             _context.Accounts.Remove(existingAccount);

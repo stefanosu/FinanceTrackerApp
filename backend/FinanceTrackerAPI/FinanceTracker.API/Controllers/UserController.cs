@@ -24,12 +24,12 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserByIdAsync(int userId) 
+        public async Task<IActionResult> GetUserByIdAsync(int userId)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
                 throw new NotFoundException("User", userId);
-                
+
             return Ok(user);
         }
 
@@ -53,7 +53,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateUser([FromBody] User user) 
+        public async Task<IActionResult> UpdateUser([FromBody] User user)
         {
             if (user == null)
                 throw new ValidationException("User cannot be null.");
@@ -83,7 +83,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             var existingUser = await _context.Users.FindAsync(id);
             if (existingUser == null)
                 throw new NotFoundException("User", id);
-                
+
             _context.Users.Remove(existingUser);
             await _context.SaveChangesAsync();
             return Ok("User deleted successfully.");

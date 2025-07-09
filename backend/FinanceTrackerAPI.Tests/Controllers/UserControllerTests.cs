@@ -29,7 +29,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             // Arrange
             using var context = new FinanceTrackerDbContext(_options);
             var controller = new UserController(_mockLogger.Object, context);
-            
+
             var testUser = new User
             {
                 Id = 1,
@@ -43,7 +43,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 Token = "test-token",
                 RefreshToken = "test-refresh-token"
             };
-            
+
             context.Users.Add(testUser);
             await context.SaveChangesAsync();
 
@@ -74,7 +74,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             // Arrange
             using var context = new FinanceTrackerDbContext(_options);
             var controller = new UserController(_mockLogger.Object, context);
-            
+
             var newUser = new User
             {
                 FirstName = "Jane",
@@ -109,4 +109,4 @@ namespace FinanceTrackerAPI.Tests.Controllers
             await Assert.ThrowsAsync<ValidationException>(() => controller.CreateUser(null));
         }
     }
-} 
+}
