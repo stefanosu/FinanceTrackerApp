@@ -40,7 +40,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             return Ok(users);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             if (user == null)
@@ -52,7 +52,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             return Ok(user);
         }
 
-        [HttpPut]
+        [HttpPut("{userId}")]
         public async Task<IActionResult> UpdateUser([FromBody] User user)
         {
             if (user == null)
