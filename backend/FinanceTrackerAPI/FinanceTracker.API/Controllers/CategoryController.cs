@@ -28,7 +28,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             return Ok(categories);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateCategory([FromBody] ExpenseCategory category)
         {
             if (category == null)

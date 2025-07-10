@@ -30,7 +30,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             return Ok(transactions);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateTransaction([FromBody] Transaction transaction)
         {
             if (transaction == null)

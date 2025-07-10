@@ -32,7 +32,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             return Ok(accounts);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateAccount([FromBody] Account account)
         {
             if (account == null)

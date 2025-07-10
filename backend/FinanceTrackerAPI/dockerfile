@@ -1,28 +1,21 @@
-# Use the official .NET 8 SDK image for building the app
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-
-# Copy the .csproj file and restore dependencies
-COPY ["FinanceTrackerAPI.csproj", "./"]
-RUN dotnet restore "FinanceTrackerAPI.csproj"
-
-# Copy the rest of the application files
-COPY . .
-
-WORKDIR "/src"
-RUN dotnet build "FinanceTrackerAPI.csproj" -c Release -o /app/build
-
-# Publish the app
-FROM build AS publish
-RUN dotnet publish "FinanceTrackerAPI.csproj" -c Release -o /app/publish
-
-# Use the .NET 8 runtime image as the base for the final image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 5280
 
-# Copy the published app and set the entrypoint
-COPY --from=publish /app/publish .
+# Copy csproj and restore as distinct layers
+COPY ./*.sln ./
+COPY FinanceTrackerAPI/*.csproj ./FinanceTrackerAPI/
+COPY FinanceTracker.Data/*.csproj ./FinanceTracker.Data/
+COPY FinanceTracker.Domain/*.csproj ./FinanceTracker.Domain/
+RUN dotnet restore
 
+# Copy everything else and build
+COPY . .
+WORKDIR /app/FinanceTrackerAPI
+RUN dotnet publish -c Release -o out
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/FinanceTrackerAPI/out ./
 ENTRYPOINT ["dotnet", "FinanceTrackerAPI.dll"]

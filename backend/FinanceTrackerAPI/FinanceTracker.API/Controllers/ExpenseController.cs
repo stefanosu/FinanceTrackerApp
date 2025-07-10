@@ -22,6 +22,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpGet("all")]
+
         public async Task<IActionResult> GetAllExpenses()
         {
             var expenses = await _context.Expenses.ToListAsync();
@@ -38,7 +39,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             return Ok(expense);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
         {
             if (expense == null)
@@ -73,6 +74,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Route("")]
         public async Task<IActionResult> DeleteExpense(int id)
         {
             var existingExpense = await _context.Expenses.FindAsync(id);
