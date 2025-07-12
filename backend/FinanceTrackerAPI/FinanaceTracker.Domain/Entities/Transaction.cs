@@ -12,4 +12,16 @@ public class Transaction
     public int CategoryId { get; set; }
     public required string Notes { get; set; }
 
+    public Transaction() { }
+
+    public Transaction(int id, int accountId, int amount, string type, DateOnly dateOnly, int categoryId, string notes)
+    {
+        Id = id;
+        AccountId = accountId;
+        Amount = amount;
+        Type = type;
+        this.dateOnly = dateOnly;
+        CategoryId = categoryId;
+        Notes = notes;
+    }
 }

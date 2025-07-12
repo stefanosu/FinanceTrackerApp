@@ -18,9 +18,12 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-        
+
     - name: Restore dependencies
-      run: dotnet restore backend/FinanceTrackerAPI/
+      run: dotnet restore backend/FinanceTrackerAPI/FinanceTrackerAPI.csproj
+
+    - name: Run security scan
+      run: dotnet list backend/FinanceTrackerAPI package --vulnerable
       
     - name: Build
       run: dotnet build backend/FinanceTrackerAPI/ --no-restore
