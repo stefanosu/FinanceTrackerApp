@@ -38,6 +38,8 @@
 **/bin/
 **/obj/
 **/TestResults/
+bin/
+obj/
 
 # === Ignore local gitignore backups ===
 !.gitignore
