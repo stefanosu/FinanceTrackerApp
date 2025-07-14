@@ -21,9 +21,12 @@ jobs:
 
     - name: Restore dependencies
       run: dotnet restore backend/FinanceTrackerAPI/FinanceTrackerAPI.csproj
-
+      
+    - name: List obj directory
+      run: ls -R backend/FinanceTrackerAPI/obj
+      
     - name: Run security scan
-      run: dotnet list backend/FinanceTrackerAPI package --vulnerable
+      run: dotnet list backend/FinanceTrackerAPI/ package --vulnerable
       
     - name: Build
       run: dotnet build backend/FinanceTrackerAPI/ --no-restore
