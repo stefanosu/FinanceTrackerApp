@@ -10,9 +10,9 @@ public class Account
     public required string PasswordHash { get; set; }
 
 
-    public Account(){}
+    public Account() { }
 
-    public Account(int id, string name,  string email, string PasswordHash) 
+    public Account(int id, string name, string email, string PasswordHash)
     {
         this.id = id;
         this.Name = name;
