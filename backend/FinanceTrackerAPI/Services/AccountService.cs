@@ -10,7 +10,7 @@ namespace backend.Services
     {
         public void CreteExpense(ExpenseDto dto)
         {
-            
+
         }
     }
 }

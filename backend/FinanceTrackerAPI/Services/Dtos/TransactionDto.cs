@@ -7,6 +7,6 @@ namespace FinanceTrackerAPI.Services.Dtos
 {
     public class TransactionDto
     {
-        
+
     }
 }

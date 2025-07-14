@@ -8,4 +8,4 @@ public class ExpenseDto
     public string Date { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
-} 
+}

@@ -7,6 +7,6 @@ namespace FinanceTrackerAPI.Tests
 {
     public class CategoryService
     {
-        
+
     }
 }
