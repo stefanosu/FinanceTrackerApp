@@ -5,12 +5,17 @@ using System.Threading.Tasks;
 
 namespace FinanceTrackerAPI.Services.Dtos
 {
+    namespace FinanceTrackerAPI.Services.Dtos
+{
     public class AccountDto
     {
-        public required int id { get; set; }
-        public required string Name { get; set; }
-        public required string Email { get; set; }
-        public required string PasswordHash { get; set; }
-
+        public int Id { get; set; }                     
+        public string Name { get; set; }
+        public decimal Balance { get; set; }          
+        public string? Description { get; set; }
+        public DateTime CreatedAt { get; set; } 
+        public string AccountType {get; set; }
+        // Add other fields as needed, e.g., AccountType, Currency, etc.
     }
+}
 }

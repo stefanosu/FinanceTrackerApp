@@ -10,8 +10,9 @@ namespace FinanceTrackerAPI.Services.Dtos
         public class CreateAccountDto
         {
             // Add properties as needed, for example:
-            public string Name { get; set; }
+            public string? Name { get; set; }
             public decimal InitialBalance { get; set; }
+            public string? Description { get; set; }
         }
     }
 }
