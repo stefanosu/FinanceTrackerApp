@@ -55,7 +55,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
 
             existingAccount.Name = account.Name;
             existingAccount.Email = account.Email;
-            existingAccount.PasswordHash = account.PasswordHash;
+            existingAccount.AccountType = account.AccountType;
 
             await _context.SaveChangesAsync();
             return Ok(existingAccount);
