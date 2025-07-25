@@ -7,8 +7,8 @@ namespace FinanceTrackerAPI.Services.Dtos
 {
     public class TransactionDto
     {
-        public string TransactionId { get; set;}
-        public string TransactionType { get; set;}
-        
+        public string TransactionId { get; set; }
+        public string TransactionType { get; set; }
+
     }
 }

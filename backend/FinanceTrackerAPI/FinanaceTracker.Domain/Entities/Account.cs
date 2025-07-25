@@ -7,7 +7,7 @@ public class Account
     public required int id { get; set; }
     public required string Name { get; set; }
     public required string Email { get; set; }
-    public string AccountType  { get; set; }
+    public string AccountType { get; set; }
 
 
     public Account() { }
