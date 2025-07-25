@@ -13,7 +13,15 @@ namespace FinanceTrackerAPI.Services.Dtos
         public decimal Balance { get; set; }
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string? AccountType { get; set; }
-        // Add other fields as needed, e.g., AccountType, Currency, etc.
+        public AccountType AccountType { get; set; }
+        // Add other fields as needed, e.g., Currency, etc.
+
+        public enum AccountType
+        {
+            Savings,
+            Checking,
+            Credit,
+            Investment
+        }
     }
 }
