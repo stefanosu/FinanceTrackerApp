@@ -19,8 +19,12 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
+    - name: Verify csproj exists
+      run: ls -al backend/FinanceTrackerAPI/FinanceTrackerAPI.csproj
+
     - name: Restore dependencies
       run: dotnet restore backend/FinanceTrackerAPI/FinanceTrackerAPI.csproj
+      continue-on-error: false
       
     - name: List obj directory
       run: ls -R backend/FinanceTrackerAPI/obj
