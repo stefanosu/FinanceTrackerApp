@@ -20,11 +20,13 @@ namespace backend.Services
         public async Task<AccountDto> CreateAccountAsync(CreateAccountDto dto)
         {
             // Validate input
-            if(dto == null) {
+            if (dto == null)
+            {
                 throw new ArgumentNullException("Account info not valid.");
             }
             // Map DTO to entity
-            var account = new Account {
+            var account = new Account
+            {
                 id = 0,
                 Name = dto.Name,
                 Email = "default@email.com",
@@ -35,7 +37,8 @@ namespace backend.Services
             _context.Accounts.Add(account);
             await _context.SaveChangesAsync();
             // Map entity to DTO and return
-            return new AccountDto {
+            return new AccountDto
+            {
                 Id = account.id,
                 Name = dto.Name,
                 Balance = account.Balance,
