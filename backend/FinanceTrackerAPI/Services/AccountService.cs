@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using backend.Services.Interfaces;
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.Services.Dtos;
-using FinanceTrackerAPI.Services.Dtos.FinanceTrackerAPI.Services.Dtos;
 
 namespace backend.Services
 {
@@ -21,20 +21,84 @@ namespace backend.Services
         public async Task<AccountDto> CreateAccountAsync(CreateAccountDto dto)
         {
             // Validate input
+            if (dto == null)
+            {
+                throw new ArgumentNullException("Account info not valid.");
+            }
             // Map DTO to entity
+            var account = new Account
+            {
+                id = 0,
+                Name = dto.Name,
+                Email = "default@email.com",
+                AccountType = "Checking",
+                Balance = dto.InitialBalance
+            };
             // Save to DB
+            _context.Accounts.Add(account);
+            await _context.SaveChangesAsync();
             // Map entity to DTO and return
-            return await Task.FromResult<AccountDto>(null);
+            return new AccountDto
+            {
+                Id = account.id,
+                Name = dto.Name,
+                Balance = account.Balance,
+                CreatedAt = DateTime.UtcNow,
+                AccountType = account.AccountType,
+                Description = dto.Description ?? string.Empty,
+            };
         }
 
         public async Task<AccountDto> GetAccountByIdAsync(int id)
         {
             // Fetch from DB
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
             // Handle not found
+            if (account == null) {
+                throw new ArgumentException($"Account with id {id} not found");
+            }
             // Map to DTO and return
-            return await Task.FromResult<AccountDto>(null);
+            return new AccountDto 
+            {
+                Id = account.id,
+                Name = account.Name,
+                Balance = account.Balance,
+                CreatedAt = DateTime.UtcNow,
+                AccountType = account.AccountType,
+                Description = string.Empty 
+            };
         }
-
         // ... other methods (Update, Delete, etc.)
+
+        public async Task<AccountDto> UpdateAccountAsync(int id, UpdateAccountDto dto) 
+        {
+            // Find account
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
+            // Validate input
+            if (account == null) 
+            {
+                throw new ArgumentException($"Account with id {id} is not found.");
+            }
+            
+            if(!string.IsNullOrEmpty(dto.Name))
+                account.Name = dto.Name;
+
+            if(!string.IsNullOrEmpty(dto.Email))
+                account.Email = dto.Email;
+
+            //Save changes
+            await _context.SaveChangesAsync();
+
+            // Update properties
+            return new AccountDto
+            {
+                Name = account.Name,
+                Id = account.id,
+                Balance = account.Balance,
+                CreatedAt = DateTime.UtcNow,
+                Description = string.Empty,
+                AccountType = account.AccountType,
+            };
+        }
     }
 }
