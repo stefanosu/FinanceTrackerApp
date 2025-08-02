@@ -12,6 +12,8 @@ namespace FinanceTrackerAPI.Services.Dtos
         public required decimal InitialBalance { get; set; }
         public required string? Description { get; set; }
         public required int Id { get; set; }
+        public string? Email { get; set; }
+
 
     }
 }
