@@ -27,7 +27,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task GetUserByIdAsync_WithValidId_ReturnsUser()
         {
             // Arrange
-            using var context = new FinanceTrackerDbContext(_options);
+            var context = new FinanceTrackerDbContext(_options);
             var controller = new UserController(_mockLogger.Object, context);
 
             var testUser = new User
