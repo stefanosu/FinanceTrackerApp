@@ -1,5 +1,4 @@
 using FinanceTrackerAPI.FinanceTracker.Data;
-using FinanceTrackerAPI.FinanceTracker.API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,8 +16,7 @@ builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
 
 var app = builder.Build();
 
-// Add global exception handler middleware
-app.UseMiddleware<GlobalExceptionHandler>();
+// Global exception handling is now handled by ExceptionHandlingFilter
 
 // Seed data
 using (var scope = app.Services.CreateScope())

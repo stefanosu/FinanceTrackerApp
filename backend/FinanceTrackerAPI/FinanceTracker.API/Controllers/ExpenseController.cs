@@ -7,16 +7,13 @@ using backend.Services.Interfaces;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ExpenseController : ControllerBase
+    public class ExpenseController : BaseController
     {
-        private readonly ILogger<ExpenseController> _logger;
         private readonly IExpenseService _expenseService;
 
-        public ExpenseController(ILogger<ExpenseController> logger, IExpenseService expenseService)
+        public ExpenseController(ILogger<ExpenseController> logger, IExpenseService expenseService) 
+            : base(logger)
         {
-            _logger = logger;
             _expenseService = expenseService;
         }
 
@@ -30,8 +27,13 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetExpenseById(int id)
         {
-            var expense = await _expenseService.GetExpenseByIdAsync(id);
-            return Ok(expense);
+            // Input validation
+            if (!ValidateId(id))
+            {
+                return BadRequest($"Invalid expense ID: {id}. ID must be a positive integer.");
+            }
+
+            return await HandleServiceResult(() => _expenseService.GetExpenseByIdAsync(id));
         }
 
         [HttpPost("create")]
