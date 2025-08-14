@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using backend.Services.Interfaces;
+using FinanceTrackerAPI.Services.Interfaces;
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.Services.Dtos;
 
@@ -99,6 +99,33 @@ namespace backend.Services
                 Description = string.Empty,
                 AccountType = account.AccountType,
             };
+        }
+
+        public async Task<IEnumerable<AccountDto>> GetAllAccountsAsync()
+        {
+            var accounts = await _context.Accounts.ToListAsync();
+            return accounts.Select(a => new AccountDto
+            {
+                Id = a.id,
+                Name = a.Name,
+                Balance = a.Balance,
+                CreatedAt = DateTime.UtcNow,
+                AccountType = a.AccountType,
+                Description = string.Empty
+            });
+        }
+
+        public async Task<bool> DeleteAccountAsync(int id)
+        {
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
+            if (account == null)
+            {
+                return false;
+            }
+
+            _context.Accounts.Remove(account);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

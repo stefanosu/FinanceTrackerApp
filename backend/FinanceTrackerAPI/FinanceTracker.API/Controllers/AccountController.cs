@@ -25,11 +25,31 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             _context = context;
         }
 
+        [HttpGet("ping")] public IActionResult Ping() => Ok("pong");
+
+
+        [HttpGet("health/db")]
+public async Task<IActionResult> DbHealth()
+    => Ok(new { canConnect = await _context.Database.CanConnectAsync() });
+
+
+
         [HttpGet("all")]
         public async Task<IActionResult> GetAllAccounts()
         {
-            var accounts = await _context.Accounts.ToListAsync();
-            return Ok(accounts);
+            // var accounts = await _context.Accounts.ToListAsync();
+            // return Ok(accounts);
+
+        try
+        {
+        var accounts = await _context.Accounts.AsNoTracking().ToListAsync();
+        return Ok(accounts);
+        }
+    catch (Exception ex)
+        {
+        _logger.LogError(ex, "Failed to get accounts");
+        return Problem(title: "GetAllAccounts failed", detail: ex.Message);
+        }
         }
 
         [HttpPost("create")]
