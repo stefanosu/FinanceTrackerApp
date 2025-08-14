@@ -1,4 +1,6 @@
 using FinanceTrackerAPI.FinanceTracker.Data;
+using backend.Services;
+using FinanceTrackerAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,9 @@ builder.Services.AddSwaggerGen();            // Register Swagger generator
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Register application services
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 //Adding Data to DB
 builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
