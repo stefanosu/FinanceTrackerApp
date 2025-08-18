@@ -1,5 +1,6 @@
 using FinanceTrackerAPI.FinanceTracker.Data;
 using backend.Services;
+using FinanceTrackerAPI.Services;
 using FinanceTrackerAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,7 @@ builder.Services.AddControllers();
 
 // Register application services
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 //Adding Data to DB
 builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
