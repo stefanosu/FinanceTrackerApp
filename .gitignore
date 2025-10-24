@@ -43,3 +43,11 @@ obj/
 
 # === Ignore local gitignore backups ===
 !.gitignore
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.sln.iml
+.history/
+.cursorrules

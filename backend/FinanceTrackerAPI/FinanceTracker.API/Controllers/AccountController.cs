@@ -14,14 +14,12 @@ namespace FinanceTrackerAPI.FinanceTracker.API
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccountController : ControllerBase
+    public class AccountController : BaseController
     {
-        private readonly ILogger<AccountController> _logger;
         private readonly IAccountService _accountService;
 
-        public AccountController(ILogger<AccountController> logger, IAccountService accountService)
+        public AccountController(ILogger<AccountController> logger, IAccountService accountService) : base(logger)
         {
-            _logger = logger;
             _accountService = accountService;
         }
 
@@ -40,54 +38,28 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         [HttpGet("all")]
         public async Task<IActionResult> GetAllAccounts()
         {
-            try
-            {
-                var accounts = await _accountService.GetAllAccountsAsync();
-                return Ok(accounts);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get accounts");
-                return Problem(title: "GetAllAccounts failed", detail: ex.Message);
-            }
+            return await HandleServiceResult(() => _accountService.GetAllAccountsAsync());
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAccountById(int id)
         {
-            try
+            if(!ValidateId(id)) 
             {
-                var account = await _accountService.GetAccountByIdAsync(id);
-                return Ok(account);
+                return BadRequest($"Invalid account ID: {id}. ID must be a positive integer.");
             }
-            catch (NotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Account not found: {AccountId}", id);
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get account: {AccountId}", id);
-                return Problem(title: "GetAccountById failed", detail: ex.Message);
-            }
+            
+            return await HandleServiceResult(() => _accountService.GetAccountByIdAsync(id));
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto createAccountDto)
         {
+
             if (createAccountDto == null)
                 throw new ValidationException("Account cannot be null.");
 
-            try
-            {
-                var createdAccount = await _accountService.CreateAccountAsync(createAccountDto);
-                return Ok(createdAccount);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create account");
-                return Problem(title: "CreateAccount failed", detail: ex.Message);
-            }
+            return await HandleServiceResult(() => _accountService.CreateAccountAsync(createAccountDto));
         }
 
         [HttpPut("{id}")]
@@ -96,43 +68,23 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             if (updateAccountDto == null)
                 throw new ValidationException("Account cannot be null.");
 
-            try
+            if(!ValidateId(id)) 
             {
-                var updatedAccount = await _accountService.UpdateAccountAsync(id, updateAccountDto);
-                return Ok(updatedAccount);
+                return BadRequest($"Invalid account ID: {id}. ID must be a positive integer.");
             }
-            catch (NotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Account not found for update: {AccountId}", id);
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to update account: {AccountId}", id);
-                return Problem(title: "UpdateAccount failed", detail: ex.Message);
-            }
+
+            return await HandleServiceResult(() => _accountService.UpdateAccountAsync(id, updateAccountDto));
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            try
+            if(!ValidateId(id)) 
             {
-                var deleted = await _accountService.DeleteAccountAsync(id);
-                if (deleted)
-                {
-                    return Ok("Account deleted successfully.");
-                }
-                else
-                {
-                    return NotFound($"Account with ID {id} not found.");
-                }
+                return BadRequest($"Invalid account ID: {id}. ID must be a positive integer.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete account: {AccountId}", id);
-                return Problem(title: "DeleteAccount failed", detail: ex.Message);
-            }
+
+            return await HandleServiceResult(() => _accountService.DeleteAccountAsync(id));
         }
     }
 }
