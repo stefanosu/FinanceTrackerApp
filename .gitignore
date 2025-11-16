@@ -12,6 +12,7 @@
 *.bak
 .env*
 .history/
+cursor-context.md
 
 # === Node.js & Next.js (Frontend) ===
 **/node_modules/
