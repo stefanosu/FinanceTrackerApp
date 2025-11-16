@@ -13,8 +13,21 @@ builder.Services.AddSwaggerGen();            // Register Swagger generator
 // Add services to the container.
 builder.Services.AddControllers();
 
+// Configure CORS for cookie support
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); // Required for cookies
+    });
+});
+
 // Register application services
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 
@@ -30,6 +43,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<FinanceTrackerDbContext>();
+    await context.Database.MigrateAsync();
     await DataSeeder.SeedData(context);
 }
 
@@ -46,6 +60,9 @@ if (app.Environment.IsDevelopment())
 
 // Configure the HTTP request pipeline
 app.UseRouting();
+
+// Enable CORS
+app.UseCors("AllowFrontend");
 
 // Map controllers to routes
 app.MapControllers();

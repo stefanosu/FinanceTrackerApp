@@ -14,6 +14,8 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
             }
 
             // Seed Users
+            // Note: Passwords are hashed using BCrypt
+            // Test credentials: john.doe@example.com / password123, jane.smith@example.com / password456
             var users = new List<User>
             {
                 new User
@@ -22,12 +24,12 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
                     FirstName = "John",
                     LastName = "Doe",
                     Email = "john.doe@example.com",
-                    Password = "hashedpassword123",
+                    Password = BCrypt.Net.BCrypt.HashPassword("password123"),
                     Role = "User",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    Token = "sample-token-1",
-                    RefreshToken = "sample-refresh-token-1"
+                    Token = string.Empty,
+                    RefreshToken = string.Empty
                 },
                 new User
                 {
@@ -35,12 +37,12 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
                     FirstName = "Jane",
                     LastName = "Smith",
                     Email = "jane.smith@example.com",
-                    Password = "hashedpassword456",
+                    Password = BCrypt.Net.BCrypt.HashPassword("password456"),
                     Role = "Admin",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    Token = "sample-token-2",
-                    RefreshToken = "sample-refresh-token-2"
+                    Token = string.Empty,
+                    RefreshToken = string.Empty
                 }
             };
 
