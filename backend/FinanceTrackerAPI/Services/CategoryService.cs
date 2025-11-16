@@ -25,7 +25,7 @@ namespace FinanceTrackerAPI.Services
             var category = await _context.ExpenseCategories.FindAsync(id);
             if (category == null)
                 throw new NotFoundException("Category", id);
-            
+
             return category;
         }
 
@@ -36,7 +36,7 @@ namespace FinanceTrackerAPI.Services
 
             await _context.ExpenseCategories.AddAsync(category);
             await _context.SaveChangesAsync();
-            
+
             return category;
         }
 
@@ -64,7 +64,7 @@ namespace FinanceTrackerAPI.Services
 
             _context.ExpenseCategories.Remove(existingCategory);
             await _context.SaveChangesAsync();
-            
+
             return true;
         }
     }

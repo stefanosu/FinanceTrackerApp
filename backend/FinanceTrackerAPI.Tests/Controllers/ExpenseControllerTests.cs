@@ -21,14 +21,14 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetAllExpenses_WithMockedData_ReturnsOkResult() 
+        public async Task GetAllExpenses_WithMockedData_ReturnsOkResult()
         {
             // Arrange - Set up your test data and conditions
             var mockExpenses = new List<Expense>
             {
-                new Expense { 
-                    Id = 1, 
-                    Name = "Groceries", 
+                new Expense {
+                    Id = 1,
+                    Name = "Groceries",
                     Amount = 50.00M,
                     Description = "Grocery shopping",
                     Date = DateTime.Now,
@@ -38,9 +38,9 @@ namespace FinanceTrackerAPI.Tests.Controllers
                     Notes = "Weekly groceries",
                     UserId = 1
                 },
-                new Expense { 
-                    Id = 2, 
-                    Name = "Gas", 
+                new Expense {
+                    Id = 2,
+                    Name = "Gas",
                     Amount = 30.00M,
                     Description = "Gas station",
                     Date = DateTime.Now,
@@ -54,7 +54,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
 
             _mockExpenseService.Setup(x => x.GetAllExpensesAsync())
                 .ReturnsAsync(mockExpenses);
-            
+
             // Act - Call the method you're testing
             var controller = new ExpenseController(_mockLogger.Object, _mockExpenseService.Object);
             var result = await controller.GetAllExpenses();
@@ -66,7 +66,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             Assert.Equal(2, returnedExpenses.Count);
             Assert.Equal("Groceries", returnedExpenses[0].Name);
             Assert.Equal("Gas", returnedExpenses[1].Name);
-            
+
             // Verify the service was called
             _mockExpenseService.Verify(x => x.GetAllExpensesAsync(), Times.Once);
         }

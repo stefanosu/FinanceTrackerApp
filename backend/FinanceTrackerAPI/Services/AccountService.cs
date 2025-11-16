@@ -54,36 +54,37 @@ namespace backend.Services
             // Fetch from DB
             var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
             // Handle not found
-            if (account == null) {
+            if (account == null)
+            {
                 throw new ArgumentException($"Account with id {id} not found");
             }
             // Map to DTO and return
-            return new AccountDto 
+            return new AccountDto
             {
                 Id = account.id,
                 Name = account.Name,
                 Balance = account.Balance,
                 CreatedAt = DateTime.UtcNow,
                 AccountType = account.AccountType,
-                Description = string.Empty 
+                Description = string.Empty
             };
         }
         // ... other methods (Update, Delete, etc.)
 
-        public async Task<AccountDto> UpdateAccountAsync(int id, UpdateAccountDto dto) 
+        public async Task<AccountDto> UpdateAccountAsync(int id, UpdateAccountDto dto)
         {
             // Find account
             var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
             // Validate input
-            if (account == null) 
+            if (account == null)
             {
                 throw new ArgumentException($"Account with id {id} is not found.");
             }
-            
-            if(!string.IsNullOrEmpty(dto.Name))
+
+            if (!string.IsNullOrEmpty(dto.Name))
                 account.Name = dto.Name;
 
-            if(!string.IsNullOrEmpty(dto.Email))
+            if (!string.IsNullOrEmpty(dto.Email))
                 account.Email = dto.Email;
 
             //Save changes

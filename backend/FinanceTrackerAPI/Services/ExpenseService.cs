@@ -25,7 +25,7 @@ namespace backend.Services
             var expense = await _context.Expenses.FindAsync(id);
             if (expense == null)
                 throw new NotFoundException("Expense", id);
-            
+
             return expense;
         }
 

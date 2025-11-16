@@ -38,11 +38,11 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             try
             {
                 var response = await _authService.LoginAsync(request.Email, request.Password);
-                
+
                 // Set HTTP-only cookies for secure token storage
                 var isDevelopment = HttpContext.RequestServices
                     .GetRequiredService<IHostEnvironment>().IsDevelopment();
-                
+
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
@@ -50,9 +50,9 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
                     SameSite = SameSiteMode.Lax,
                     Expires = DateTimeOffset.UtcNow.AddDays(1) // Access token expires in 1 day
                 };
-                
+
                 Response.Cookies.Append("accessToken", response.AccessToken, cookieOptions);
-                
+
                 var refreshCookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
@@ -60,9 +60,9 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
                     SameSite = SameSiteMode.Lax,
                     Expires = DateTimeOffset.UtcNow.AddDays(7) // Refresh token expires in 7 days
                 };
-                
+
                 Response.Cookies.Append("refreshToken", response.RefreshToken, refreshCookieOptions);
-                
+
                 // Return tokens in response body as well (for client-side access if needed)
                 // In production, consider omitting tokens from response if using HTTP-only cookies only
                 return Ok(response);

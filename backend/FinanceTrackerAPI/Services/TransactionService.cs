@@ -25,7 +25,7 @@ namespace FinanceTrackerAPI.Services
             var transaction = await _context.Transactions.FindAsync(id);
             if (transaction == null)
                 throw new NotFoundException("Transaction", id);
-            
+
             return transaction;
         }
 
@@ -36,7 +36,7 @@ namespace FinanceTrackerAPI.Services
 
             await _context.Transactions.AddAsync(transaction);
             await _context.SaveChangesAsync();
-            
+
             return transaction;
         }
 
@@ -65,7 +65,7 @@ namespace FinanceTrackerAPI.Services
 
             _context.Transactions.Remove(existingTransaction);
             await _context.SaveChangesAsync();
-            
+
             return true;
         }
     }

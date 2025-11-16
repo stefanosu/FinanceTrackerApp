@@ -11,7 +11,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
     {
         private readonly IExpenseService _expenseService;
 
-        public ExpenseController(ILogger<ExpenseController> logger, IExpenseService expenseService) 
+        public ExpenseController(ILogger<ExpenseController> logger, IExpenseService expenseService)
             : base(logger)
         {
             _expenseService = expenseService;
