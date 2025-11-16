@@ -16,6 +16,7 @@ builder.Services.AddControllers();
 // Register application services
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 //Adding Data to DB
 builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
