@@ -2,7 +2,7 @@ using Moq;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
-using FinanceTrackerAPI.FinanceTracker.API;
+using FinanceTrackerAPI.FinanceTracker.API.Controllers;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using FinanceTrackerAPI.Services.Interfaces;

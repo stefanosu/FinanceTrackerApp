@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using FinanceTrackerAPI.Services.Interfaces;
 using FinanceTrackerAPI.Services.Dtos;
 
-namespace FinanceTrackerAPI.FinanceTracker.API
+namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
