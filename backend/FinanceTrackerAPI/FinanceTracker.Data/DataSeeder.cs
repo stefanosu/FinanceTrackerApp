@@ -1,4 +1,5 @@
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceTrackerAPI.FinanceTracker.Data

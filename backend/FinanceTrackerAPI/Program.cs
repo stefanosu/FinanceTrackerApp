@@ -1,7 +1,9 @@
 using backend.Services;
+
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.Services;
 using FinanceTrackerAPI.Services.Interfaces;
+
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,11 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using FinanceTrackerAPI.Services.Dto;
 using FinanceTrackerAPI.Services.Interfaces;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
