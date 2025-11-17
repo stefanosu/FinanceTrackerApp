@@ -1,6 +1,7 @@
+using System.Reflection;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.Reflection;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Filters
 {

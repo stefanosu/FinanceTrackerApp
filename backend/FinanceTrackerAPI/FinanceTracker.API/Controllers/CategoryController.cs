@@ -1,10 +1,11 @@
 using System;
 using System.Threading.Tasks;
-using FinanceTrackerAPI.FinanceTracker.Data;
+
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using FinanceTrackerAPI.Services.Interfaces;
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
@@ -13,59 +14,79 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ILogger<CategoryController> _logger;
-        private readonly FinanceTrackerDbContext _context;
+        private readonly ICategoryService _categoryService;
 
-        public CategoryController(ILogger<CategoryController> logger, FinanceTrackerDbContext context)
+        public CategoryController(ILogger<CategoryController> logger, ICategoryService categoryService)
         {
             _logger = logger;
-            _context = context;
+            _categoryService = categoryService;
         }
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAllCategories()
         {
-            var categories = await _context.ExpenseCategories.ToListAsync();
-            return Ok(categories);
+            try
+            {
+                var categories = await _categoryService.GetAllCategoriesAsync();
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all categories");
+                return Problem(title: "GetAllCategories failed", detail: ex.Message);
+            }
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateCategory([FromBody] ExpenseCategory category)
         {
-            if (category == null)
-                throw new ValidationException("Category cannot be null.");
-
-            await _context.ExpenseCategories.AddAsync(category);
-            await _context.SaveChangesAsync();
-            return Ok(category);
+            try
+            {
+                var createdCategory = await _categoryService.CreateCategoryAsync(category);
+                return Ok(createdCategory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create category");
+                return Problem(title: "CreateCategory failed", detail: ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] ExpenseCategory category)
         {
-            if (category == null)
-                throw new ValidationException("Category cannot be null.");
-
-            var existingCategory = await _context.ExpenseCategories.FindAsync(id);
-            if (existingCategory == null)
-                throw new NotFoundException("Category", id);
-
-            existingCategory.Name = category.Name;
-            existingCategory.Description = category.Description;
-
-            await _context.SaveChangesAsync();
-            return Ok(existingCategory);
+            try
+            {
+                var updatedCategory = await _categoryService.UpdateCategoryAsync(id, category);
+                return Ok(updatedCategory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update category: {CategoryId}", id);
+                return Problem(title: "UpdateCategory failed", detail: ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            var existingCategory = await _context.ExpenseCategories.FindAsync(id);
-            if (existingCategory == null)
-                throw new NotFoundException("Category", id);
-
-            _context.ExpenseCategories.Remove(existingCategory);
-            await _context.SaveChangesAsync();
-            return Ok("Category deleted successfully.");
+            try
+            {
+                var deleted = await _categoryService.DeleteCategoryAsync(id);
+                if (deleted)
+                {
+                    return Ok("Category deleted successfully.");
+                }
+                else
+                {
+                    return BadRequest("Failed to delete category.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete category: {CategoryId}", id);
+                return Problem(title: "DeleteCategory failed", detail: ex.Message);
+            }
         }
     }
 }

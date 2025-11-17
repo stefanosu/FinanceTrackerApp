@@ -1,8 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+using backend.Services.Interfaces;
+
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
-using backend.Services.Interfaces;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services
 {
@@ -25,7 +27,7 @@ namespace backend.Services
             var expense = await _context.Expenses.FindAsync(id);
             if (expense == null)
                 throw new NotFoundException("Expense", id);
-            
+
             return expense;
         }
 

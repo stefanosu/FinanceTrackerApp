@@ -1,9 +1,12 @@
 using System;
 using System.Threading.Tasks;
+
+using backend.Services.Interfaces;
+
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+
 using Microsoft.AspNetCore.Mvc;
-using backend.Services.Interfaces;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
@@ -11,7 +14,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
     {
         private readonly IExpenseService _expenseService;
 
-        public ExpenseController(ILogger<ExpenseController> logger, IExpenseService expenseService) 
+        public ExpenseController(ILogger<ExpenseController> logger, IExpenseService expenseService)
             : base(logger)
         {
             _expenseService = expenseService;
