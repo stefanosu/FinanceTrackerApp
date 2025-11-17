@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {

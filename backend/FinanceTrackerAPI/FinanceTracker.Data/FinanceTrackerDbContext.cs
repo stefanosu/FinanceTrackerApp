@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.API;
+using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinanceTrackerAPI.FinanceTracker.Data
 {
