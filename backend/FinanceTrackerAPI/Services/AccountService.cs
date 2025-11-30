@@ -71,7 +71,6 @@ namespace backend.Services
                 Description = string.Empty
             };
         }
-        // ... other methods (Update, Delete, etc.)
 
         public async Task<AccountDto> UpdateAccountAsync(int id, UpdateAccountDto dto)
         {
