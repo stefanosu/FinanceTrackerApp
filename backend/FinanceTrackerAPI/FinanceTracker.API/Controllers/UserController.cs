@@ -85,7 +85,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete user: {UserId}", id);
-                return Problem(title: "DeleteUser failed", detail: ex.Message);
+                return Problem(title: "DeleteUser failed", detail: "An unexpected error occurred while deleting the user.");
             }
         }
     }
