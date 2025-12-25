@@ -97,8 +97,16 @@ namespace FinanceTrackerAPI.Services
             if (!string.IsNullOrEmpty(dto.LastName))
                 user.LastName = dto.LastName;
             
-            if (!string.IsNullOrEmpty(dto.Email))
+            if (!string.IsNullOrEmpty(dto.Email) && !string.Equals(dto.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var emailInUse = await _context.Users.AnyAsync(u => u.Email == dto.Email && u.Id != id);
+                if (emailInUse)
+                {
+                    throw new ValidationException($"Email '{dto.Email}' is already in use.");
+                }
+
                 user.Email = dto.Email;
+            }
 
             // Password updates are intentionally not allowed via this general update method
             // to avoid changing passwords without proper verification.
