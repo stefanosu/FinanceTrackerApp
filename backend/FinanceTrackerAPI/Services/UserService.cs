@@ -100,8 +100,8 @@ namespace FinanceTrackerAPI.Services
             if (!string.IsNullOrEmpty(dto.Email))
                 user.Email = dto.Email;
 
-            if (!string.IsNullOrEmpty(dto.Password))
-                user.Password = dto.Password;
+            // Password updates are intentionally not allowed via this general update method
+            // to avoid changing passwords without proper verification.
 
             if (dto.Role != null)
                 user.Role = dto.Role;
