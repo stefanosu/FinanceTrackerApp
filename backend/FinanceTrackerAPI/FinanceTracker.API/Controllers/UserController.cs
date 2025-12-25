@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using FinanceTrackerAPI.Services.Dtos;
+using FinanceTrackerAPI.Services.Interfaces;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using FinanceTrackerAPI.Services.Dtos;
-using FinanceTrackerAPI.Services.Interfaces;
 
 namespace FinanceTrackerAPI.FinanceTracker.API
 {
@@ -19,7 +19,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API
     public class UserController : ControllerBase
     {
         private readonly ILogger<UserController> _logger;
-        private readonly IUserService _userService; 
+        private readonly IUserService _userService;
 
         public UserController(ILogger<UserController> logger, IUserService userService)
         {

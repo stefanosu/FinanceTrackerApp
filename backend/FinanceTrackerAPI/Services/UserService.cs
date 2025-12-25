@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+
+using BCrypt.Net;
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace FinanceTrackerAPI.Services
 {
@@ -15,7 +18,7 @@ namespace FinanceTrackerAPI.Services
     {
         private readonly FinanceTrackerDbContext _context;
 
-        public UserService(FinanceTrackerDbContext context) 
+        public UserService(FinanceTrackerDbContext context)
         {
             _context = context;
         }
@@ -23,30 +26,30 @@ namespace FinanceTrackerAPI.Services
         public async Task<UserDto> CreateUserAsync(CreateUserDto dto)
         {
             // Validate input 
-            if (dto == null) 
+            if (dto == null)
             {
                 throw new ValidationException("User cannot be null.");
             }
-            
+
             // Map DTO to entity 
             var user = new User
             {
                 Id = 0,
                 FirstName = dto.FirstName,
-                LastName = dto.LastName, 
+                LastName = dto.LastName,
                 Email = dto.Email,
-                Password = dto.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = dto.Role ?? "User",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Token = string.Empty,
-                RefreshToken = string.Empty,
-            }; 
-            
+                Token = string.Empty,  // Set during authentication
+                RefreshToken = string.Empty,  // Set during authentication
+            };
+
             // Save to DB 
             _context.Add(user);
             await _context.SaveChangesAsync();
-            
+
             // Map entity to DTO and return 
             return new UserDto
             {
@@ -55,22 +58,22 @@ namespace FinanceTrackerAPI.Services
                 LastName = user.LastName,
                 Email = user.Email,
                 Role = user.Role,
-            }; 
+            };
         }
 
         public async Task<UserDto> GetUserByIdAsync(int id)
         {
             // Fetch from DB 
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
-            
+
             // Handle not found 
             if (user == null)
             {
                 throw new NotFoundException("User", id);
             }
-            
+
             // Map to DTO and return 
-            return new UserDto 
+            return new UserDto
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
@@ -84,7 +87,7 @@ namespace FinanceTrackerAPI.Services
         {
             // Find user 
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
-            
+
             // Validate input
             if (user == null)
             {
@@ -96,7 +99,7 @@ namespace FinanceTrackerAPI.Services
 
             if (!string.IsNullOrEmpty(dto.LastName))
                 user.LastName = dto.LastName;
-            
+
             if (!string.IsNullOrEmpty(dto.Email) && !string.Equals(dto.Email, user.Email, StringComparison.OrdinalIgnoreCase))
             {
                 var emailInUse = await _context.Users.AnyAsync(u => u.Email == dto.Email && u.Id != id);
@@ -104,12 +107,11 @@ namespace FinanceTrackerAPI.Services
                 {
                     throw new ValidationException($"Email '{dto.Email}' is already in use.");
                 }
-
                 user.Email = dto.Email;
             }
 
-            // Password updates are intentionally not allowed via this general update method
-            // to avoid changing passwords without proper verification.
+            if (!string.IsNullOrEmpty(dto.Password))
+                user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             if (dto.Role != null)
                 user.Role = dto.Role;
