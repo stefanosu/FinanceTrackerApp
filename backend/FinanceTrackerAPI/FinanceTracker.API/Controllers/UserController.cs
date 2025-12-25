@@ -31,9 +31,6 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         public async Task<IActionResult> GetUserById(int userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);
-            if (user == null)
-                throw new NotFoundException("User", userId);
-
             return Ok(user);
         }
 
@@ -61,9 +58,6 @@ namespace FinanceTrackerAPI.FinanceTracker.API
                 throw new ValidationException("User cannot be null.");
 
             var updatedUser = await _userService.UpdateUserAsync(userId, createUserDto);
-            if (updatedUser == null)
-                throw new NotFoundException("User", userId);
-
             return Ok(updatedUser);
         }
 
@@ -73,14 +67,9 @@ namespace FinanceTrackerAPI.FinanceTracker.API
             try
             {
                 var deleted = await _userService.DeleteUserAsync(id);
-                if (deleted)
-                {
-                    return Ok("User deleted successfully.");
-                }
-                else
-                {
-                    return NotFound($"User with ID {id} not found.");
-                }
+                return deleted
+                    ? Ok("User deleted successfully.")
+                    : NotFound($"User with ID {id} not found.");
             }
             catch (Exception ex)
             {
