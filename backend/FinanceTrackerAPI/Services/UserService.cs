@@ -31,6 +31,13 @@ namespace FinanceTrackerAPI.Services
                 throw new ValidationException("User cannot be null.");
             }
 
+            // Check if email is already in use (case-insensitive)
+            var emailInUse = await _context.Users.AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower());
+            if (emailInUse)
+            {
+                throw new ValidationException($"Email '{dto.Email}' is already in use.");
+            }
+
             // Map DTO to entity 
             var user = new User
             {
@@ -102,7 +109,8 @@ namespace FinanceTrackerAPI.Services
 
             if (!string.IsNullOrEmpty(dto.Email) && !string.Equals(dto.Email, user.Email, StringComparison.OrdinalIgnoreCase))
             {
-                var emailInUse = await _context.Users.AnyAsync(u => u.Email == dto.Email && u.Id != id);
+                // Check if email is already in use (case-insensitive)
+                var emailInUse = await _context.Users.AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower() && u.Id != id);
                 if (emailInUse)
                 {
                     throw new ValidationException($"Email '{dto.Email}' is already in use.");

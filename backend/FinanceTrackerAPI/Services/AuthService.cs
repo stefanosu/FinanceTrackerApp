@@ -38,7 +38,7 @@ namespace FinanceTrackerAPI.Services
             }
 
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
 
             if (user == null)
             {
