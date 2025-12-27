@@ -1,5 +1,8 @@
 using Moq;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
 using FinanceTrackerAPI.FinanceTracker.API.Controllers;
@@ -42,12 +45,31 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.LoginAsync(loginRequest.Email, loginRequest.Password))
                 .ReturnsAsync(expectedResponse);
 
+            // Setup HttpContext for cookie operations
+            var hostEnvironment = new Mock<IHostEnvironment>();
+            hostEnvironment.Setup(x => x.EnvironmentName).Returns("Development");
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IHostEnvironment>(hostEnvironment.Object);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            };
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
             // Act
             var result = await _controller.Login(loginRequest);
 
             // Assert
             Assert.NotNull(result);
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            var okResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal(200, okResult.StatusCode);
             var response = Assert.IsType<LoginResponse>(okResult.Value);
             Assert.Equal("mock-access-token", response.AccessToken);
             Assert.Equal("mock-refresh-token", response.RefreshToken);

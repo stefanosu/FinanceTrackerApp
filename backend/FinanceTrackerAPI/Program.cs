@@ -21,7 +21,6 @@ builder.Services.AddControllers();
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
 
 // Configure CORS for cookie support
 builder.Services.AddCors(options =>

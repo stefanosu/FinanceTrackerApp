@@ -32,7 +32,7 @@ namespace FinanceTrackerAPI.Services
             }
 
             // Check if email is already in use (case-insensitive)
-            var emailInUse = await _context.Users.AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower());
+            var emailInUse = await _context.Users.AnyAsync(u => u.Email != null && u.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase));
             if (emailInUse)
             {
                 throw new ValidationException($"Email '{dto.Email}' is already in use.");
@@ -90,7 +90,7 @@ namespace FinanceTrackerAPI.Services
             };
         }
 
-        public async Task<UserDto> UpdateUserAsync(int id, CreateUserDto dto)
+        public async Task<UserDto> UpdateUserAsync(int id, UpdateUserDto dto)
         {
             // Find user 
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
@@ -110,7 +110,7 @@ namespace FinanceTrackerAPI.Services
             if (!string.IsNullOrEmpty(dto.Email) && !string.Equals(dto.Email, user.Email, StringComparison.OrdinalIgnoreCase))
             {
                 // Check if email is already in use (case-insensitive)
-                var emailInUse = await _context.Users.AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower() && u.Id != id);
+                var emailInUse = await _context.Users.AnyAsync(u => u.Email != null && u.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase) && u.Id != id);
                 if (emailInUse)
                 {
                     throw new ValidationException($"Email '{dto.Email}' is already in use.");

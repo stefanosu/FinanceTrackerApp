@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-using FinanceTrackerAPI.FinanceTracker.API;
+using FinanceTrackerAPI.FinanceTracker.API.Controllers;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
@@ -158,11 +158,15 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task CreateUser_WithNullDto_ThrowsValidationException()
         {
             // Arrange
+            _mockUserService
+                .Setup(x => x.CreateUserAsync(null!))
+                .ThrowsAsync(new ValidationException("User cannot be null."));
+
             var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<ValidationException>(() => controller.CreateUser(null!));
-            _mockUserService.Verify(x => x.CreateUserAsync(It.IsAny<CreateUserDto>()), Times.Never);
+            _mockUserService.Verify(x => x.CreateUserAsync(null!), Times.Once);
         }
 
         [Fact]
@@ -170,7 +174,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var userId = 1;
-            var updateDto = new CreateUserDto
+            var updateDto = new UpdateUserDto
             {
                 FirstName = "Jane",
                 LastName = "Smith",
@@ -189,7 +193,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             };
 
             _mockUserService
-                .Setup(x => x.UpdateUserAsync(userId, It.IsAny<CreateUserDto>()))
+                .Setup(x => x.UpdateUserAsync(userId, It.IsAny<UpdateUserDto>()))
                 .ReturnsAsync(expectedUser);
 
             var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
@@ -211,7 +215,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var userId = 999;
-            var updateDto = new CreateUserDto
+            var updateDto = new UpdateUserDto
             {
                 FirstName = "Jane",
                 LastName = "Smith",
@@ -221,7 +225,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             };
 
             _mockUserService
-                .Setup(x => x.UpdateUserAsync(userId, It.IsAny<CreateUserDto>()))
+                .Setup(x => x.UpdateUserAsync(userId, It.IsAny<UpdateUserDto>()))
                 .ThrowsAsync(new NotFoundException("User", userId));
 
             var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
@@ -235,11 +239,15 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task UpdateUser_WithNullDto_ThrowsValidationException()
         {
             // Arrange
+            _mockUserService
+                .Setup(x => x.UpdateUserAsync(1, null!))
+                .ThrowsAsync(new ValidationException("User cannot be null."));
+
             var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<ValidationException>(() => controller.UpdateUser(1, null!));
-            _mockUserService.Verify(x => x.UpdateUserAsync(It.IsAny<int>(), It.IsAny<CreateUserDto>()), Times.Never);
+            _mockUserService.Verify(x => x.UpdateUserAsync(1, null!), Times.Once);
         }
 
         [Fact]

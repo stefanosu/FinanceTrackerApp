@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
@@ -12,7 +11,7 @@ using FinanceTrackerAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace FinanceTrackerAPI.FinanceTracker.API
+namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -44,38 +43,24 @@ namespace FinanceTrackerAPI.FinanceTracker.API
         [HttpPost("create")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createUserDto)
         {
-            if (createUserDto == null)
-                throw new ValidationException("User cannot be null.");
-
             var createdUser = await _userService.CreateUserAsync(createUserDto);
             return Ok(createdUser);
         }
 
         [HttpPut("{userId}")]
-        public async Task<IActionResult> UpdateUser(int userId, [FromBody] CreateUserDto createUserDto)
+        public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserDto updateUserDto)
         {
-            if (createUserDto == null)
-                throw new ValidationException("User cannot be null.");
-
-            var updatedUser = await _userService.UpdateUserAsync(userId, createUserDto);
+            var updatedUser = await _userService.UpdateUserAsync(userId, updateUserDto);
             return Ok(updatedUser);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            try
-            {
-                var deleted = await _userService.DeleteUserAsync(id);
-                return deleted
-                    ? Ok("User deleted successfully.")
-                    : NotFound($"User with ID {id} not found.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete user: {UserId}", id);
-                return Problem(title: "DeleteUser failed", detail: "An unexpected error occurred while deleting the user.");
-            }
+            var deleted = await _userService.DeleteUserAsync(id);
+            return deleted
+                ? Ok("User deleted successfully.")
+                : NotFound($"User with ID {id} not found.");
         }
     }
 }
