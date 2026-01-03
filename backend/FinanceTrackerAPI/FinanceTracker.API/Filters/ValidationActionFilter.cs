@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +15,10 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Filters
             if (actionMethod == null) return;
 
             // Check if this is a method that should validate IDs
-            var methodName = actionMethod.ActionName.ToLower();
-            if (methodName.Contains("getbyid") || methodName.Contains("update") || methodName.Contains("delete"))
+            var methodName = actionMethod.ActionName;
+            if (methodName.Contains("getbyid", StringComparison.OrdinalIgnoreCase) || 
+                methodName.Contains("update", StringComparison.OrdinalIgnoreCase) || 
+                methodName.Contains("delete", StringComparison.OrdinalIgnoreCase))
             {
                 // Look for 'id' parameter specifically
                 if (context.ActionArguments.TryGetValue("id", out var idValue) && idValue is int id)

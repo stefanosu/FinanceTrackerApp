@@ -2,93 +2,65 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using FinanceTrackerAPI.Services.Dtos;
+using FinanceTrackerAPI.Services.Interfaces;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace FinanceTrackerAPI.FinanceTracker.API
+namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
         private readonly ILogger<UserController> _logger;
-        private readonly FinanceTrackerDbContext _context;
+        private readonly IUserService _userService;
 
-        public UserController(ILogger<UserController> logger, FinanceTrackerDbContext context)
+        public UserController(ILogger<UserController> logger, IUserService userService)
         {
             _logger = logger;
-            _context = context;
+            _userService = userService;
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserByIdAsync(int userId)
+        public async Task<IActionResult> GetUserById(int userId)
         {
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-                throw new NotFoundException("User", userId);
-
+            var user = await _userService.GetUserByIdAsync(userId);
             return Ok(user);
         }
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _context.Users.ToListAsync();
+            var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateUser([FromBody] User user)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createUserDto)
         {
-            if (user == null)
-                throw new ValidationException("User cannot be null.");
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(user);
+            var createdUser = await _userService.CreateUserAsync(createUserDto);
+            return Ok(createdUser);
         }
 
         [HttpPut("{userId}")]
-        public async Task<IActionResult> UpdateUser([FromBody] User user)
+        public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserDto updateUserDto)
         {
-            if (user == null)
-                throw new ValidationException("User cannot be null.");
-
-            var existingUser = await _context.Users.FindAsync(user.Id);
-            if (existingUser == null)
-                throw new NotFoundException("User", user.Id);
-
-            // Update the existing user with new attributes
-            existingUser.FirstName = user.FirstName;
-            existingUser.LastName = user.LastName;
-            existingUser.Email = user.Email;
-            existingUser.Password = user.Password;
-            existingUser.Role = user.Role;
-            existingUser.UpdatedAt = DateTime.UtcNow;
-            existingUser.Token = user.Token;
-            existingUser.RefreshToken = user.RefreshToken;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(existingUser);
+            var updatedUser = await _userService.UpdateUserAsync(userId, updateUserDto);
+            return Ok(updatedUser);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var existingUser = await _context.Users.FindAsync(id);
-            if (existingUser == null)
-                throw new NotFoundException("User", id);
-
-            _context.Users.Remove(existingUser);
-            await _context.SaveChangesAsync();
-            return Ok("User deleted successfully.");
+            var deleted = await _userService.DeleteUserAsync(id);
+            return deleted
+                ? Ok("User deleted successfully.")
+                : NotFound($"User with ID {id} not found.");
         }
     }
 }

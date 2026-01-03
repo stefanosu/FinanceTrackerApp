@@ -4,6 +4,9 @@ using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.Services;
 using FinanceTrackerAPI.Services.Interfaces;
 
+using FluentValidation;
+using FluentValidation.AspNetCore;
+
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +17,10 @@ builder.Services.AddSwaggerGen();            // Register Swagger generator
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Add FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddFluentValidationAutoValidation();
 
 // Configure CORS for cookie support
 builder.Services.AddCors(options =>
@@ -32,6 +39,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 //Adding Data to DB
 builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>

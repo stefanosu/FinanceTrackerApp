@@ -71,4 +71,4 @@ jobs:
         dotnet-version: '8.0.x'
         
     - name: Run code formatting check
-      run: dotnet format --verify-no-changes backend/FinanceTrackerAPI/ 
+      run: dotnet format backend/FinanceTrackerAPI/FinanceTrackerAPI.sln --verify-no-changes 
