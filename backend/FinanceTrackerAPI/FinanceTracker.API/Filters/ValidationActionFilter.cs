@@ -20,13 +20,17 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Filters
                 methodName.Contains("update", StringComparison.OrdinalIgnoreCase) ||
                 methodName.Contains("delete", StringComparison.OrdinalIgnoreCase))
             {
-                // Look for 'id' parameter specifically
-                if (context.ActionArguments.TryGetValue("id", out var idValue) && idValue is int id)
+                // Look for 'id' or 'userId' parameter
+                string[] idParameterNames = { "id", "userId" };
+                foreach (var paramName in idParameterNames)
                 {
-                    if (id <= 0)
+                    if (context.ActionArguments.TryGetValue(paramName, out var idValue) && idValue is int id)
                     {
-                        context.Result = new BadRequestObjectResult($"Invalid ID: {id}. ID must be a positive integer.");
-                        return;
+                        if (id <= 0)
+                        {
+                            context.Result = new BadRequestObjectResult($"Invalid ID: {id}. ID must be a positive integer.");
+                            return;
+                        }
                     }
                 }
             }
