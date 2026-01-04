@@ -48,20 +48,14 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetAllAccounts_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task GetAllAccounts_WhenExceptionOccurs_ThrowsException()
         {
             // Arrange - Mock service to throw exception
             _mockAccountService.Setup(x => x.GetAllAccountsAsync()).ThrowsAsync(new Exception("Database connection failed"));
 
-            // Act
-            var result = await _controller.GetAllAccounts();
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            // The controller returns Problem() which creates a ProblemDetails object
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert
+            // Exception will propagate to GlobalExceptionHandler middleware in production
+            await Assert.ThrowsAsync<Exception>(() => _controller.GetAllAccounts());
         }
 
         [Fact]

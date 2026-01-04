@@ -42,99 +42,38 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAllAccounts()
         {
-            try
-            {
-                var accounts = await _accountService.GetAllAccountsAsync();
-                return Ok(accounts);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get accounts");
-                return Problem(title: "GetAllAccounts failed", detail: ex.Message);
-            }
+            var accounts = await _accountService.GetAllAccountsAsync();
+            return Ok(accounts);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAccountById(int id)
         {
-            try
-            {
-                var account = await _accountService.GetAccountByIdAsync(id);
-                return Ok(account);
-            }
-            catch (NotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Account not found: {AccountId}", id);
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get account: {AccountId}", id);
-                return Problem(title: "GetAccountById failed", detail: ex.Message);
-            }
+            var account = await _accountService.GetAccountByIdAsync(id);
+            return Ok(account);
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto createAccountDto)
         {
-            if (createAccountDto == null)
-                throw new ValidationException("Account cannot be null.");
-
-            try
-            {
-                var createdAccount = await _accountService.CreateAccountAsync(createAccountDto);
-                return Ok(createdAccount);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create account");
-                return Problem(title: "CreateAccount failed", detail: ex.Message);
-            }
+            var createdAccount = await _accountService.CreateAccountAsync(createAccountDto);
+            return Ok(createdAccount);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateAccountDto updateAccountDto)
         {
-            if (updateAccountDto == null)
-                throw new ValidationException("Account cannot be null.");
-
-            try
-            {
-                var updatedAccount = await _accountService.UpdateAccountAsync(id, updateAccountDto);
-                return Ok(updatedAccount);
-            }
-            catch (NotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Account not found for update: {AccountId}", id);
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to update account: {AccountId}", id);
-                return Problem(title: "UpdateAccount failed", detail: ex.Message);
-            }
+            var updatedAccount = await _accountService.UpdateAccountAsync(id, updateAccountDto);
+            return Ok(updatedAccount);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            try
-            {
-                var deleted = await _accountService.DeleteAccountAsync(id);
-                if (deleted)
-                {
-                    return Ok("Account deleted successfully.");
-                }
-                else
-                {
-                    return NotFound($"Account with ID {id} not found.");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete account: {AccountId}", id);
-                return Problem(title: "DeleteAccount failed", detail: ex.Message);
-            }
+            var deleted = await _accountService.DeleteAccountAsync(id);
+            return deleted
+                ? Ok("Account deleted successfully.")
+                : NotFound($"Account with ID {id} not found.");
         }
     }
 }
