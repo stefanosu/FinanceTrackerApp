@@ -10,12 +10,12 @@ namespace FinanceTrackerAPI.Services.Validators
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("First name is required")
                 .Length(2, 50).WithMessage("First name must be between 2 and 50 characters")
-                .Matches(@"^[a-zA-Z\s'-]+$").WithMessage("First name can only contain letters, spaces, hyphens, and apostrophes");
+                .Matches(@"^(?=.*[a-zA-Z])[a-zA-Z\s'-]+$").WithMessage("First name can only contain letters, spaces, hyphens, and apostrophes");
 
             RuleFor(x => x.LastName)
                 .NotEmpty().WithMessage("Last name is required")
                 .Length(2, 50).WithMessage("Last name must be between 2 and 50 characters")
-                .Matches(@"^[a-zA-Z\s'-]+$").WithMessage("Last name can only contain letters, spaces, hyphens, and apostrophes");
+                .Matches(@"^(?=.*[a-zA-Z])[a-zA-Z\s'-]+$").WithMessage("Last name can only contain letters, spaces, hyphens, and apostrophes");
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required")
