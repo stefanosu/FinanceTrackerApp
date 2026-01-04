@@ -16,14 +16,12 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccountController : ControllerBase
+    public class AccountController : BaseController
     {
-        private readonly ILogger<AccountController> _logger;
         private readonly IAccountService _accountService;
 
-        public AccountController(ILogger<AccountController> logger, IAccountService accountService)
+        public AccountController(ILogger<AccountController> logger, IAccountService accountService) : base(logger)
         {
-            _logger = logger;
             _accountService = accountService;
         }
 
