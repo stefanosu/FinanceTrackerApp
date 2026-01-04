@@ -24,18 +24,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Login([FromBody] LoginRequest? request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            if (request == null)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid request",
-                    Detail = "Request body is required.",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
             try
             {
                 var response = await _authService.LoginAsync(request.Email, request.Password);
@@ -70,6 +60,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             }
             catch (FinanceTrackerAPI.FinanceTracker.Domain.Exceptions.ValidationException ex)
             {
+                // AuthController needs to return 401 Unauthorized for ValidationException
+                // instead of 400 BadRequest (which GlobalExceptionHandler would return)
                 _logger.LogWarning("Login failed for email: {Email}, Reason: {Message}", request.Email, ex.Message);
                 return Unauthorized(new ProblemDetails
                 {
@@ -77,15 +69,6 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
                     Detail = ex.Message,
                     Status = StatusCodes.Status401Unauthorized
                 });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during login for email: {Email}", request.Email);
-                return Problem(
-                    title: "An error occurred during login",
-                    detail: "Please try again later.",
-                    statusCode: StatusCodes.Status500InternalServerError
-                );
             }
         }
     }

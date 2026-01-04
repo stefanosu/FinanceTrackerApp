@@ -1,5 +1,7 @@
 using backend.Services;
 
+using FinanceTrackerAPI.FinanceTracker.API.Filters;
+using FinanceTrackerAPI.FinanceTracker.API.Middleware;
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.Services;
 using FinanceTrackerAPI.Services.Interfaces;
@@ -16,7 +18,10 @@ builder.Services.AddEndpointsApiExplorer();  // Add support for OpenAPI/Swagger
 builder.Services.AddSwaggerGen();            // Register Swagger generator
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationActionFilter>();
+});
 
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -47,8 +52,6 @@ builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
 
 var app = builder.Build();
 
-// Global exception handling is now handled by ExceptionHandlingFilter
-
 // Seed data
 using (var scope = app.Services.CreateScope())
 {
@@ -70,6 +73,9 @@ if (app.Environment.IsDevelopment())
 
 // Configure the HTTP request pipeline
 app.UseRouting();
+
+// Register global exception handling middleware (after routing, before controllers)
+app.UseMiddleware<GlobalExceptionHandler>();
 
 // Enable CORS
 app.UseCors("AllowFrontend");

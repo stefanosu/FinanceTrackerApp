@@ -40,53 +40,38 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAllAccounts()
         {
-            return await HandleServiceResult(() => _accountService.GetAllAccountsAsync());
+            var accounts = await _accountService.GetAllAccountsAsync();
+            return Ok(accounts);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAccountById(int id)
         {
-            if(!ValidateId(id)) 
-            {
-                return BadRequest($"Invalid account ID: {id}. ID must be a positive integer.");
-            }
-            
-            return await HandleServiceResult(() => _accountService.GetAccountByIdAsync(id));
+            var account = await _accountService.GetAccountByIdAsync(id);
+            return Ok(account);
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto createAccountDto)
         {
-
-            if (createAccountDto == null)
-                throw new ValidationException("Account cannot be null.");
-
-            return await HandleServiceResult(() => _accountService.CreateAccountAsync(createAccountDto));
+            var createdAccount = await _accountService.CreateAccountAsync(createAccountDto);
+            return Ok(createdAccount);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateAccountDto updateAccountDto)
         {
-            if (updateAccountDto == null)
-                throw new ValidationException("Account cannot be null.");
-
-            if(!ValidateId(id)) 
-            {
-                return BadRequest($"Invalid account ID: {id}. ID must be a positive integer.");
-            }
-
-            return await HandleServiceResult(() => _accountService.UpdateAccountAsync(id, updateAccountDto));
+            var updatedAccount = await _accountService.UpdateAccountAsync(id, updateAccountDto);
+            return Ok(updatedAccount);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            if(!ValidateId(id)) 
-            {
-                return BadRequest($"Invalid account ID: {id}. ID must be a positive integer.");
-            }
-
-            return await HandleServiceResult(() => _accountService.DeleteAccountAsync(id));
+            var deleted = await _accountService.DeleteAccountAsync(id);
+            return deleted
+                ? Ok("Account deleted successfully.")
+                : NotFound($"Account with ID {id} not found.");
         }
     }
 }
