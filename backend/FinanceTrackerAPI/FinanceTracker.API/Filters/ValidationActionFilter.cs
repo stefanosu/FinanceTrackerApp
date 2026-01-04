@@ -16,8 +16,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Filters
 
             // Check if this is a method that should validate IDs
             var methodName = actionMethod.ActionName;
-            if (methodName.Contains("getbyid", StringComparison.OrdinalIgnoreCase) || 
-                methodName.Contains("update", StringComparison.OrdinalIgnoreCase) || 
+            if (methodName.Contains("getbyid", StringComparison.OrdinalIgnoreCase) ||
+                methodName.Contains("update", StringComparison.OrdinalIgnoreCase) ||
                 methodName.Contains("delete", StringComparison.OrdinalIgnoreCase))
             {
                 // Look for 'id' parameter specifically

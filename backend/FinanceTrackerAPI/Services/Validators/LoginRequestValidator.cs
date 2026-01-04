@@ -1,5 +1,6 @@
-using FluentValidation;
 using FinanceTrackerAPI.Services.Dto;
+
+using FluentValidation;
 
 namespace FinanceTrackerAPI.Services.Validators
 {
