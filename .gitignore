@@ -13,6 +13,7 @@
 .env*
 .history/
 cursor-context.md
+CONTRIBUTING_COMMITS.md
 
 # === Node.js & Next.js (Frontend) ===
 **/node_modules/
