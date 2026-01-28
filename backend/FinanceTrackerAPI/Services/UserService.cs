@@ -159,7 +159,7 @@ namespace FinanceTrackerAPI.Services
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
             if (user == null)
             {
-                return false;
+                throw new NotFoundException("User", id);
             }
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();

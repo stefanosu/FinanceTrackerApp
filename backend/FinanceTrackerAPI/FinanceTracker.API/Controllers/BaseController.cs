@@ -39,11 +39,11 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
             }
         }
 
-        protected IActionResult HandleServiceResult(Func<Task> serviceCall)
+        protected async Task<IActionResult> HandleServiceResult(Func<Task> serviceCall)
         {
             try
             {
-                serviceCall().Wait();
+                await serviceCall();
                 return Ok();
             }
             catch (NotFoundException ex)

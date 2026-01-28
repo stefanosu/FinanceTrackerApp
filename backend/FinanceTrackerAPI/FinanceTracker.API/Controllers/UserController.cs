@@ -1,16 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using FinanceTrackerAPI.FinanceTracker.Data;
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
-using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
@@ -58,10 +49,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var deleted = await _userService.DeleteUserAsync(id);
-            return deleted
-                ? Ok("User deleted successfully.")
-                : NotFound($"User with ID {id} not found.");
+            await _userService.DeleteUserAsync(id);
+            return Ok("User deleted successfully.");
         }
     }
 }

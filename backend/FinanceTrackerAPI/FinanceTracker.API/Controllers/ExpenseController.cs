@@ -1,21 +1,18 @@
-using System;
-using System.Threading.Tasks;
-
 using backend.Services.Interfaces;
 
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
-using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
-    public class ExpenseController : BaseController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ExpenseController : ControllerBase
     {
         private readonly IExpenseService _expenseService;
 
-        public ExpenseController(ILogger<ExpenseController> logger, IExpenseService expenseService)
-            : base(logger)
+        public ExpenseController(IExpenseService expenseService)
         {
             _expenseService = expenseService;
         }
@@ -30,13 +27,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetExpenseById(int id)
         {
-            // Input validation
-            if (!ValidateId(id))
-            {
-                return BadRequest($"Invalid expense ID: {id}. ID must be a positive integer.");
-            }
-
-            return await HandleServiceResult(() => _expenseService.GetExpenseByIdAsync(id));
+            var expense = await _expenseService.GetExpenseByIdAsync(id);
+            return Ok(expense);
         }
 
         [HttpPost("create")]
@@ -54,7 +46,6 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Route("")]
         public async Task<IActionResult> DeleteExpense(int id)
         {
             await _expenseService.DeleteExpenseAsync(id);
