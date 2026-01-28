@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using FinanceTrackerAPI.FinanceTracker.Data;
+using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Services
+namespace FinanceTrackerAPI.Services
 {
     public class AccountService : IAccountService
     {
@@ -25,7 +26,7 @@ namespace backend.Services
             // Validate input
             if (dto == null)
             {
-                throw new ArgumentNullException("Account info not valid.");
+                throw new ValidationException("Account cannot be null.");
             }
             // Map DTO to entity
             var account = new Account
@@ -58,7 +59,7 @@ namespace backend.Services
             // Handle not found
             if (account == null)
             {
-                throw new ArgumentException($"Account with id {id} not found");
+                throw new NotFoundException("Account", id);
             }
             // Map to DTO and return
             return new AccountDto
@@ -79,7 +80,7 @@ namespace backend.Services
             // Validate input
             if (account == null)
             {
-                throw new ArgumentException($"Account with id {id} is not found.");
+                throw new NotFoundException("Account", id);
             }
 
             if (!string.IsNullOrEmpty(dto.Name))
@@ -122,7 +123,7 @@ namespace backend.Services
             var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
             if (account == null)
             {
-                return false;
+                throw new NotFoundException("Account", id);
             }
 
             _context.Accounts.Remove(account);

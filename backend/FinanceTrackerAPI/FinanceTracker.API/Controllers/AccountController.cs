@@ -1,16 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
-using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
@@ -68,10 +59,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            var deleted = await _accountService.DeleteAccountAsync(id);
-            return deleted
-                ? Ok("Account deleted successfully.")
-                : NotFound($"Account with ID {id} not found.");
+            await _accountService.DeleteAccountAsync(id);
+            return Ok("Account deleted successfully.");
         }
     }
 }
