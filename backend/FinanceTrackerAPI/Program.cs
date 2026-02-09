@@ -1,3 +1,6 @@
+using System.Text;
+using System.Threading.RateLimiting;
+
 using backend.Services;
 
 using FinanceTrackerAPI.FinanceTracker.API.Filters;
@@ -9,7 +12,10 @@ using FinanceTrackerAPI.Services.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,15 +32,147 @@ builder.Services.AddControllers(options =>
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddHttpContextAccessor();
 
-// Configure CORS for cookie support
+
+// Configure JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+        ClockSkew = TimeSpan.Zero // Remove default 5 minute clock skew
+    };
+
+    // Support JWT from cookies (HttpOnly cookie approach)
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // Check for token in cookie first, then fall back to header
+            if (context.Request.Cookies.ContainsKey("accessToken"))
+            {
+                context.Token = context.Request.Cookies["accessToken"];
+            }
+            return Task.CompletedTask;
+        }
+    };
+});
+
+builder.Services.AddAuthorization();
+
+// ============================================================================
+// RATE LIMITING CONFIGURATION
+// ============================================================================
+// Why: Prevents brute-force attacks, credential stuffing, and API abuse
+// How: Uses .NET 8's built-in RateLimiter with different policies per endpoint type
+//
+// Key Concepts:
+// - PermitLimit: Max requests allowed in the window
+// - Window: Time period for counting requests
+// - QueueLimit: Requests to queue when limit hit (0 = reject immediately)
+// - AutoReplenishment: Automatically reset counter after window expires
+// ============================================================================
+builder.Services.AddRateLimiter(options =>
+{
+    // What happens when rate limit is exceeded
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // POLICY 1: Strict limit for authentication endpoints (login, register)
+    // Why stricter? These are prime targets for brute-force attacks
+    // 5 attempts per minute per IP is enough for legitimate users, blocks attackers
+    options.AddFixedWindowLimiter("auth", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;                        // 5 requests max
+        limiterOptions.Window = TimeSpan.FromMinutes(1);       // Per 1 minute
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;                         // No queuing - reject immediately
+    });
+
+    // POLICY 2: Standard limit for authenticated API endpoints
+    // More generous since user is already authenticated
+    // 100 requests per minute handles normal usage patterns
+    options.AddFixedWindowLimiter("api", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 100;                      // 100 requests max
+        limiterOptions.Window = TimeSpan.FromMinutes(1);       // Per 1 minute
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 2;                         // Queue up to 2 requests
+    });
+
+    // POLICY 3: Sliding window for general/public endpoints
+    // Sliding window is smoother - prevents burst attacks at window boundaries
+    options.AddSlidingWindowLimiter("general", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 30;                       // 30 requests max
+        limiterOptions.Window = TimeSpan.FromMinutes(1);       // Per 1 minute
+        limiterOptions.SegmentsPerWindow = 6;                  // 6 segments = 10-second granularity
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    // Global fallback - applies when no specific policy is set
+    // Uses client IP address as the partition key
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        // Use IP address as partition key (each IP gets its own limit)
+        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: clientIp,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            });
+    });
+
+    // Custom response when rate limited
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/problem+json";
+
+        // Include Retry-After header (tells client when to retry)
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+        }
+
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            type = "https://tools.ietf.org/html/rfc6585#section-4",
+            title = "Too Many Requests",
+            status = 429,
+            detail = "Rate limit exceeded. Please slow down your requests.",
+            instance = context.HttpContext.Request.Path
+        }, cancellationToken);
+    };
+});
+
+// Configure CORS for cookie support - restricted to specific methods and headers
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
+              .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+              .WithHeaders("Content-Type", "Authorization", "X-Requested-With", "Accept")
               .AllowCredentials(); // Required for cookies
     });
 });
@@ -46,23 +184,51 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+// Configure HSTS (HTTP Strict Transport Security)
+// This tells browsers to always use HTTPS for this domain
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);  // Browser remembers for 1 year
+    options.IncludeSubDomains = true;          // Apply to all subdomains
+    options.Preload = true;                    // Allow inclusion in browser preload lists
+});
+
+// Configure HTTPS redirection
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+    options.HttpsPort = 7280;  // Redirect to this HTTPS port
+});
+
 //Adding Data to DB
 builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// Seed data
+// Seed data (development only - see DataSeeder for security considerations)
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<FinanceTrackerDbContext>();
+    var environment = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
     await context.Database.MigrateAsync();
-    await DataSeeder.SeedData(context);
+    await DataSeeder.SeedData(context, environment, logger);
 }
 
-// Configure Kestrel to listen on both HTTP and HTTPS ports
-app.Urls.Add("http://localhost:5280");  // HTTP
-app.Urls.Add("https://localhost:7280"); // HTTPS
+// Configure Kestrel to listen on HTTPS only in production
+// In development, we allow both for easier testing
+if (app.Environment.IsDevelopment())
+{
+    app.Urls.Add("http://localhost:5280");  // HTTP - dev only
+    app.Urls.Add("https://localhost:7280"); // HTTPS
+}
+else
+{
+    // Production: HTTPS only
+    app.Urls.Add("https://localhost:7280");
+}
 
 // Enable Swagger middleware to serve the Swagger UI and API documentation
 if (app.Environment.IsDevelopment())
@@ -71,14 +237,41 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();  // Serve Swagger UI for API interaction
 }
 
+// ============================================================================
+// HTTPS REDIRECTION & HSTS
+// ============================================================================
+// UseHttpsRedirection: Redirects HTTP requests to HTTPS (301/307 redirect)
+// UseHsts: Sends Strict-Transport-Security header telling browsers to ONLY
+//          use HTTPS for this domain for the specified duration
+//
+// Why HSTS? Even with redirects, first request could be HTTP. HSTS tells
+// browser to automatically use HTTPS next time, preventing downgrade attacks.
+// ============================================================================
+if (!app.Environment.IsDevelopment())
+{
+    // HSTS in production only - browsers remember this, hard to undo during dev
+    app.UseHsts();
+}
+app.UseHttpsRedirection();
+
 // Configure the HTTP request pipeline
 app.UseRouting();
+
+// Security headers - add early in pipeline so all responses get them
+app.UseSecurityHeaders();
 
 // Register global exception handling middleware (after routing, before controllers)
 app.UseMiddleware<GlobalExceptionHandler>();
 
 // Enable CORS
 app.UseCors("AllowFrontend");
+
+// Enable Rate Limiting (before auth - we want to rate limit even failed auth attempts)
+app.UseRateLimiter();
+
+// Enable Authentication and Authorization (CRITICAL: must be after CORS, before MapControllers)
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Map controllers to routes
 app.MapControllers();
