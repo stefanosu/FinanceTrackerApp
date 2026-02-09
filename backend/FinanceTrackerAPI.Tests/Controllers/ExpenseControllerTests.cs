@@ -1,5 +1,4 @@
 using Xunit;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
 using FinanceTrackerAPI.FinanceTracker.API.Controllers;
@@ -11,13 +10,13 @@ namespace FinanceTrackerAPI.Tests.Controllers
 {
     public class ExpenseControllerTests
     {
-        private readonly Mock<ILogger<ExpenseController>> _mockLogger;
         private readonly Mock<IExpenseService> _mockExpenseService;
+        private readonly ExpenseController _controller;
 
         public ExpenseControllerTests()
         {
-            _mockLogger = new Mock<ILogger<ExpenseController>>();
             _mockExpenseService = new Mock<IExpenseService>();
+            _controller = new ExpenseController(_mockExpenseService.Object);
         }
 
         [Fact]
@@ -56,8 +55,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .ReturnsAsync(mockExpenses);
 
             // Act - Call the method you're testing
-            var controller = new ExpenseController(_mockLogger.Object, _mockExpenseService.Object);
-            var result = await controller.GetAllExpenses();
+            var result = await _controller.GetAllExpenses();
 
             // Assert - Verify the results are what you expect
             Assert.NotNull(result);
@@ -94,10 +92,8 @@ namespace FinanceTrackerAPI.Tests.Controllers
             _mockExpenseService.Setup(x => x.GetExpenseByIdAsync(expenseId))
                 .ReturnsAsync(mockExpense);
 
-            var controller = new ExpenseController(_mockLogger.Object, _mockExpenseService.Object);
-
             // Act
-            var result = await controller.GetExpenseById(expenseId);
+            var result = await _controller.GetExpenseById(expenseId);
 
             // Assert
             Assert.NotNull(result);
@@ -111,83 +107,30 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetExpenseById_WithNonExistentId_ReturnsNotFound()
+        public async Task GetExpenseById_WithNonExistentId_ThrowsNotFoundException()
         {
             // Arrange
             var expenseId = 999;
             _mockExpenseService.Setup(x => x.GetExpenseByIdAsync(expenseId))
                 .ThrowsAsync(new NotFoundException($"Expense with ID {expenseId} not found"));
 
-            var controller = new ExpenseController(_mockLogger.Object, _mockExpenseService.Object);
-
-            // Act
-            var result = await controller.GetExpenseById(expenseId);
-
-            // Assert
-            Assert.NotNull(result);
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Contains($"Expense with ID {expenseId} not found", notFoundResult.Value.ToString());
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<NotFoundException>(() => _controller.GetExpenseById(expenseId));
 
             // Verify service was called
             _mockExpenseService.Verify(x => x.GetExpenseByIdAsync(expenseId), Times.Once);
         }
 
         [Fact]
-        public async Task GetExpenseById_WithZeroId_ReturnsBadRequest()
-        {
-            // Arrange
-            var expenseId = 0;
-            var controller = new ExpenseController(_mockLogger.Object, _mockExpenseService.Object);
-
-            // Act
-            var result = await controller.GetExpenseById(expenseId);
-
-            // Assert
-            Assert.NotNull(result);
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("Invalid expense ID", badRequestResult.Value.ToString());
-
-            // Verify service was NOT called with invalid ID
-            _mockExpenseService.Verify(x => x.GetExpenseByIdAsync(It.IsAny<int>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task GetExpenseById_WithNegativeId_ReturnsBadRequest()
-        {
-            // Arrange
-            var expenseId = -1;
-            var controller = new ExpenseController(_mockLogger.Object, _mockExpenseService.Object);
-
-            // Act
-            var result = await controller.GetExpenseById(expenseId);
-
-            // Assert
-            Assert.NotNull(result);
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("Invalid expense ID", badRequestResult.Value.ToString());
-
-            // Verify service was NOT called with invalid ID
-            _mockExpenseService.Verify(x => x.GetExpenseByIdAsync(It.IsAny<int>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task GetExpenseById_WhenServiceThrowsException_ReturnsInternalServerError()
+        public async Task GetExpenseById_WhenServiceThrowsException_ThrowsException()
         {
             // Arrange
             var expenseId = 1;
             _mockExpenseService.Setup(x => x.GetExpenseByIdAsync(expenseId))
                 .ThrowsAsync(new Exception("Database connection failed"));
 
-            var controller = new ExpenseController(_mockLogger.Object, _mockExpenseService.Object);
-
-            // Act
-            var result = await controller.GetExpenseById(expenseId);
-
-            // Assert
-            Assert.NotNull(result);
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, statusCodeResult.StatusCode);
-            Assert.Contains("An error occurred", statusCodeResult.Value.ToString());
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<Exception>(() => _controller.GetExpenseById(expenseId));
 
             // Verify service was called
             _mockExpenseService.Verify(x => x.GetExpenseByIdAsync(expenseId), Times.Once);

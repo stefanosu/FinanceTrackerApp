@@ -1,5 +1,4 @@
 using Moq;
-using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
 using FinanceTrackerAPI.FinanceTracker.API.Controllers;
@@ -11,15 +10,13 @@ namespace FinanceTrackerAPI.Tests.Controllers
 {
     public class TransactionControllerTests
     {
-        private readonly Mock<ILogger<TransactionController>> _mockLogger;
         private readonly Mock<ITransactionService> _mockTransactionService;
         private readonly TransactionController _controller;
 
         public TransactionControllerTests()
         {
-            _mockLogger = new Mock<ILogger<TransactionController>>();
             _mockTransactionService = new Mock<ITransactionService>();
-            _controller = new TransactionController(_mockLogger.Object, _mockTransactionService.Object);
+            _controller = new TransactionController(_mockTransactionService.Object);
         }
 
         [Fact]
@@ -47,19 +44,13 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetAllTransactions_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task GetAllTransactions_WhenExceptionOccurs_ThrowsException()
         {
             // Arrange - Mock service to throw exception
             _mockTransactionService.Setup(x => x.GetAllTransactionsAsync()).ThrowsAsync(new Exception("Database connection failed"));
 
-            // Act
-            var result = await _controller.GetAllTransactions();
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<Exception>(() => _controller.GetAllTransactions());
         }
 
         [Fact]
@@ -83,20 +74,14 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task CreateTransaction_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task CreateTransaction_WhenExceptionOccurs_ThrowsException()
         {
             // Arrange
             var newTransaction = new Transaction { AccountId = 1, Amount = -50, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Invalid amount" };
             _mockTransactionService.Setup(x => x.CreateTransactionAsync(newTransaction)).ThrowsAsync(new ValidationException("Invalid transaction data"));
 
-            // Act
-            var result = await _controller.CreateTransaction(newTransaction);
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<ValidationException>(() => _controller.CreateTransaction(newTransaction));
         }
 
         [Fact]
@@ -121,21 +106,15 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateTransaction_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task UpdateTransaction_WhenNotFound_ThrowsNotFoundException()
         {
             // Arrange
             var transactionId = 999;
             var updateTransaction = new Transaction { AccountId = 1, Amount = 200, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Non-existent transaction" };
             _mockTransactionService.Setup(x => x.UpdateTransactionAsync(transactionId, updateTransaction)).ThrowsAsync(new NotFoundException("Transaction", transactionId));
 
-            // Act
-            var result = await _controller.UpdateTransaction(transactionId, updateTransaction);
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<NotFoundException>(() => _controller.UpdateTransaction(transactionId, updateTransaction));
         }
 
         [Fact]
@@ -143,6 +122,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var transactionId = 1;
+            // Mock returns Task<bool> per the interface - ReturnsAsync(true) creates Task<bool>
             _mockTransactionService.Setup(x => x.DeleteTransactionAsync(transactionId)).ReturnsAsync(true);
 
             // Act
@@ -151,40 +131,18 @@ namespace FinanceTrackerAPI.Tests.Controllers
             // Assert
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Contains("deleted successfully", okResult.Value.ToString());
+            Assert.Contains("deleted successfully", okResult.Value?.ToString());
         }
 
         [Fact]
-        public async Task DeleteTransaction_WhenServiceReturnsFalse_ReturnsBadRequest()
-        {
-            // Arrange
-            var transactionId = 1;
-            _mockTransactionService.Setup(x => x.DeleteTransactionAsync(transactionId)).ReturnsAsync(false);
-
-            // Act
-            var result = await _controller.DeleteTransaction(transactionId);
-
-            // Assert
-            Assert.NotNull(result);
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("Failed to delete", badRequestResult.Value.ToString());
-        }
-
-        [Fact]
-        public async Task DeleteTransaction_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task DeleteTransaction_WhenNotFound_ThrowsNotFoundException()
         {
             // Arrange
             var transactionId = 999;
             _mockTransactionService.Setup(x => x.DeleteTransactionAsync(transactionId)).ThrowsAsync(new NotFoundException("Transaction", transactionId));
 
-            // Act
-            var result = await _controller.DeleteTransaction(transactionId);
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<NotFoundException>(() => _controller.DeleteTransaction(transactionId));
         }
     }
 }

@@ -1,5 +1,4 @@
 using Moq;
-using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
 using FinanceTrackerAPI.FinanceTracker.API.Controllers;
@@ -11,15 +10,13 @@ namespace FinanceTrackerAPI.Tests.Controllers
 {
     public class CategoryControllerTests
     {
-        private readonly Mock<ILogger<CategoryController>> _mockLogger;
         private readonly Mock<ICategoryService> _mockCategoryService;
         private readonly CategoryController _controller;
 
         public CategoryControllerTests()
         {
-            _mockLogger = new Mock<ILogger<CategoryController>>();
             _mockCategoryService = new Mock<ICategoryService>();
-            _controller = new CategoryController(_mockLogger.Object, _mockCategoryService.Object);
+            _controller = new CategoryController(_mockCategoryService.Object);
         }
 
         [Fact]
@@ -47,19 +44,13 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetAllCategories_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task GetAllCategories_WhenExceptionOccurs_ThrowsException()
         {
             // Arrange - Mock service to throw exception
             _mockCategoryService.Setup(x => x.GetAllCategoriesAsync()).ThrowsAsync(new Exception("Database connection failed"));
 
-            // Act
-            var result = await _controller.GetAllCategories();
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<Exception>(() => _controller.GetAllCategories());
         }
 
         [Fact]
@@ -83,20 +74,14 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task CreateCategory_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task CreateCategory_WhenExceptionOccurs_ThrowsException()
         {
             // Arrange
             var newCategory = new ExpenseCategory { Name = "Invalid", Description = "Invalid category" };
             _mockCategoryService.Setup(x => x.CreateCategoryAsync(newCategory)).ThrowsAsync(new ValidationException("Invalid category data"));
 
-            // Act
-            var result = await _controller.CreateCategory(newCategory);
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<ValidationException>(() => _controller.CreateCategory(newCategory));
         }
 
         [Fact]
@@ -121,21 +106,15 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateCategory_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task UpdateCategory_WhenNotFound_ThrowsNotFoundException()
         {
             // Arrange
             var categoryId = 999;
             var updateCategory = new ExpenseCategory { Name = "Non-existent", Description = "This category doesn't exist" };
             _mockCategoryService.Setup(x => x.UpdateCategoryAsync(categoryId, updateCategory)).ThrowsAsync(new NotFoundException("Category", categoryId));
 
-            // Act
-            var result = await _controller.UpdateCategory(categoryId, updateCategory);
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<NotFoundException>(() => _controller.UpdateCategory(categoryId, updateCategory));
         }
 
         [Fact]
@@ -155,36 +134,14 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task DeleteCategory_WhenServiceReturnsFalse_ReturnsBadRequest()
-        {
-            // Arrange
-            var categoryId = 1;
-            _mockCategoryService.Setup(x => x.DeleteCategoryAsync(categoryId)).ReturnsAsync(false);
-
-            // Act
-            var result = await _controller.DeleteCategory(categoryId);
-
-            // Assert
-            Assert.NotNull(result);
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("Failed to delete", badRequestResult.Value.ToString());
-        }
-
-        [Fact]
-        public async Task DeleteCategory_WhenExceptionOccurs_ReturnsProblemResult()
+        public async Task DeleteCategory_WhenNotFound_ThrowsNotFoundException()
         {
             // Arrange
             var categoryId = 999;
             _mockCategoryService.Setup(x => x.DeleteCategoryAsync(categoryId)).ThrowsAsync(new NotFoundException("Category", categoryId));
 
-            // Act
-            var result = await _controller.DeleteCategory(categoryId);
-
-            // Assert
-            Assert.NotNull(result);
-            var problemResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, problemResult.StatusCode);
-            Assert.NotNull(problemResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<NotFoundException>(() => _controller.DeleteCategory(categoryId));
         }
     }
 }
