@@ -1,12 +1,15 @@
 using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // Require authentication for all endpoints by default
     public class UserController : ControllerBase
     {
         private readonly ILogger<UserController> _logger;
@@ -33,6 +36,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpPost("create")]
+        [AllowAnonymous] // Registration endpoint must be public
+        [EnableRateLimiting("auth")] // STRICT: 5 attempts per minute - prevents spam registration
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createUserDto)
         {
             var createdUser = await _userService.CreateUserAsync(createUserDto);

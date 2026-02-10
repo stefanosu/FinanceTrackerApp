@@ -271,22 +271,20 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task DeleteUser_WithInvalidId_ReturnsNotFound()
+        public async Task DeleteUser_WithInvalidId_ThrowsNotFoundException()
         {
             // Arrange
             var userId = 999;
+            // Service throws NotFoundException when user doesn't exist
+            // (follows the "exception for exceptional cases" pattern)
             _mockUserService
                 .Setup(x => x.DeleteUserAsync(userId))
-                .ReturnsAsync(false);
+                .ThrowsAsync(new NotFoundException("User", userId));
 
             var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
 
-            // Act
-            var result = await controller.DeleteUser(userId);
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal($"User with ID {userId} not found.", notFoundResult.Value);
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<NotFoundException>(() => controller.DeleteUser(userId));
             _mockUserService.Verify(x => x.DeleteUserAsync(userId), Times.Once);
         }
     }

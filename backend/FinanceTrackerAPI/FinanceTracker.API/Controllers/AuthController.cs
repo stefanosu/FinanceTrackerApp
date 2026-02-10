@@ -2,7 +2,9 @@ using FinanceTrackerAPI.FinanceTracker.API.Controllers;
 using FinanceTrackerAPI.Services.Dto;
 using FinanceTrackerAPI.Services.Interfaces;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Hosting;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
@@ -21,9 +23,12 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous] // Login endpoint must be public
+        [EnableRateLimiting("auth")] // STRICT: 5 attempts per minute - prevents brute force
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
@@ -70,6 +75,29 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
                     Status = StatusCodes.Status401Unauthorized
                 });
             }
+        }
+
+        [HttpPost("logout")]
+        [Authorize] // Must be authenticated to logout
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public IActionResult Logout()
+        {
+            // Clear authentication cookies
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = !HttpContext.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment(),
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(-1) // Expire immediately
+            };
+
+            Response.Cookies.Delete("accessToken", cookieOptions);
+            Response.Cookies.Delete("refreshToken", cookieOptions);
+
+            _logger.LogInformation("User logged out successfully");
+
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 }

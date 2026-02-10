@@ -1,12 +1,16 @@
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.Services.Interfaces;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // Require authentication for all endpoints
+    [EnableRateLimiting("api")] // 100 requests/minute for authenticated users
     public class TransactionController : ControllerBase
     {
         private readonly ITransactionService _transactionService;

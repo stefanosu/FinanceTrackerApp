@@ -1,12 +1,16 @@
 using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // Require authentication for all endpoints by default
+    [EnableRateLimiting("api")] // 100 requests/minute for authenticated users
     public class AccountController : BaseController
     {
         private readonly IAccountService _accountService;
@@ -17,9 +21,11 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpGet("ping")]
+        [AllowAnonymous] // Health check endpoints should be public
         public IActionResult Ping() => Ok("pong");
 
         [HttpGet("health/db")]
+        [AllowAnonymous] // Health check endpoints should be public
         public IActionResult DbHealth()
         {
             // Note: This health check would need to be implemented differently
