@@ -1,23 +1,24 @@
 using System;
-using System.Collections.Generic;
 
-
-public class Account
+namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
 {
-    public required int id { get; set; }
-    public required string Name { get; set; }
-    public required string Email { get; set; }
-    public required string AccountType { get; set; }
-    public decimal Balance { get; set; }
-
-
-    public Account() { }
-
-    public Account(int id, string name, string email, string accountType)
+    public class Account
     {
-        this.id = id;
-        this.Name = name;
-        this.Email = email;
-        this.AccountType = accountType;
+        public int Id { get; set; }
+        public required string Name { get; set; }
+        public required string Email { get; set; }
+        public required string AccountType { get; set; }
+        public decimal Balance { get; set; }
+
+        public Account() { }
+
+        public Account(int id, string name, string email, string accountType, decimal balance = 0)
+        {
+            Id = id;
+            Name = name;
+            Email = email;
+            AccountType = accountType;
+            Balance = balance;
+        }
     }
 }

@@ -1,27 +1,28 @@
 using System;
-using System.Collections.Generic;
 
-
-public class Transaction
+namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
 {
-    public int Id { get; set; }
-    public int AccountId { get; set; }
-    public decimal Amount { get; set; }
-    public required string Type { get; set; }
-    public DateOnly dateOnly { get; set; } = new DateOnly();
-    public int CategoryId { get; set; }
-    public required string Notes { get; set; }
-
-    public Transaction() { }
-
-    public Transaction(int id, int accountId, decimal amount, string type, DateOnly dateOnly, int categoryId, string notes)
+    public class Transaction
     {
-        Id = id;
-        AccountId = accountId;
-        Amount = amount;
-        Type = type;
-        this.dateOnly = dateOnly;
-        CategoryId = categoryId;
-        Notes = notes;
+        public int Id { get; set; }
+        public int AccountId { get; set; }
+        public decimal Amount { get; set; }
+        public required string Type { get; set; }
+        public DateOnly Date { get; set; }
+        public int CategoryId { get; set; }
+        public required string Notes { get; set; }
+
+        public Transaction() { }
+
+        public Transaction(int id, int accountId, decimal amount, string type, DateOnly date, int categoryId, string notes)
+        {
+            Id = id;
+            AccountId = accountId;
+            Amount = amount;
+            Type = type;
+            Date = date;
+            CategoryId = categoryId;
+            Notes = notes;
+        }
     }
 }
