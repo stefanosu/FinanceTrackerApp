@@ -14,11 +14,32 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
     {
         private readonly ILogger<UserController> _logger;
         private readonly IUserService _userService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public UserController(ILogger<UserController> logger, IUserService userService)
+        public UserController(
+            ILogger<UserController> logger,
+            IUserService userService,
+            ICurrentUserService currentUserService)
         {
             _logger = logger;
             _userService = userService;
+            _currentUserService = currentUserService;
+        }
+
+        /// <summary>
+        /// Gets the currently authenticated user's profile
+        /// </summary>
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var userId = _currentUserService.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User not authenticated" });
+            }
+
+            var user = await _userService.GetUserByIdAsync(userId.Value);
+            return Ok(user);
         }
 
         [HttpGet("{userId}")]

@@ -29,8 +29,18 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest? request)
         {
+            if (request == null)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid request",
+                    Detail = "Request body is required.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
             try
             {
                 var response = await _authService.LoginAsync(request.Email, request.Password);
