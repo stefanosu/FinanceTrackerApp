@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 
 using backend.Services;
+using backend.Services.Interfaces;
 
 using FinanceTrackerAPI.FinanceTracker.API.Filters;
 using FinanceTrackerAPI.FinanceTracker.API.Middleware;
@@ -27,6 +28,11 @@ builder.Services.AddSwaggerGen();            // Register Swagger generator
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationActionFilter>();
+})
+.AddJsonOptions(options =>
+{
+    // Use camelCase for JSON property names (frontend expects "message" not "Message")
+    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
 });
 
 // Add FluentValidation
@@ -125,6 +131,16 @@ builder.Services.AddRateLimiter(options =>
         limiterOptions.QueueLimit = 0;
     });
 
+    // POLICY 4: Strict limit for AI endpoints to control API costs
+    // 10 requests per minute is reasonable for chat interactions
+    options.AddFixedWindowLimiter("ai", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 10;                       // 10 requests max
+        limiterOptions.Window = TimeSpan.FromMinutes(1);       // Per 1 minute
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;                         // No queuing - reject immediately
+    });
+
     // Global fallback - applies when no specific policy is set
     // Uses client IP address as the partition key
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -181,8 +197,13 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<IBudgetAssistantService, BudgetAssistantService>();
+builder.Services.AddHttpClient();
 
 // Configure HSTS (HTTP Strict Transport Security)
 // This tells browsers to always use HTTPS for this domain
@@ -251,20 +272,23 @@ if (!app.Environment.IsDevelopment())
 {
     // HSTS in production only - browsers remember this, hard to undo during dev
     app.UseHsts();
+    // HTTPS redirection in production only - in dev, frontend uses http://localhost:5280
+    // and redirecting would break CORS preflight (redirects not allowed on OPTIONS)
+    app.UseHttpsRedirection();
 }
-app.UseHttpsRedirection();
 
 // Configure the HTTP request pipeline
 app.UseRouting();
+
+// CORS must run early so its response headers apply to ALL responses (including errors).
+// If CORS runs after GlobalExceptionHandler, 401/500 responses bypass CORS and browser blocks them.
+app.UseCors("AllowFrontend");
 
 // Security headers - add early in pipeline so all responses get them
 app.UseSecurityHeaders();
 
 // Register global exception handling middleware (after routing, before controllers)
 app.UseMiddleware<GlobalExceptionHandler>();
-
-// Enable CORS
-app.UseCors("AllowFrontend");
 
 // Enable Rate Limiting (before auth - we want to rate limit even failed auth attempts)
 app.UseRateLimiter();
