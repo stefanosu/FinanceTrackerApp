@@ -3,6 +3,7 @@ using backend.Services.Interfaces;
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using FinanceTrackerAPI.Services.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -11,21 +12,31 @@ namespace backend.Services
     public class ExpenseService : IExpenseService
     {
         private readonly FinanceTrackerDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
 
-        public ExpenseService(FinanceTrackerDbContext context)
+        public ExpenseService(FinanceTrackerDbContext context, ICurrentUserService currentUserService)
         {
             _context = context;
+            _currentUserService = currentUserService;
         }
 
         public async Task<IEnumerable<Expense>> GetAllExpensesAsync()
         {
-            return await _context.Expenses.ToListAsync();
+            var userId = _currentUserService.GetUserId();
+            if (userId == null)
+                return Enumerable.Empty<Expense>();
+
+            return await _context.Expenses
+                .Where(e => e.UserId == userId.Value)
+                .ToListAsync();
         }
 
         public async Task<Expense> GetExpenseByIdAsync(int id)
         {
+            var userId = _currentUserService.GetUserId();
             var expense = await _context.Expenses.FindAsync(id);
-            if (expense == null)
+
+            if (expense == null || (userId != null && expense.UserId != userId.Value))
                 throw new NotFoundException("Expense", id);
 
             return expense;
@@ -35,6 +46,10 @@ namespace backend.Services
         {
             if (expense == null)
                 throw new ValidationException("Expense cannot be null.");
+
+            var userId = _currentUserService.GetUserId();
+            if (userId != null)
+                expense.UserId = userId.Value;
 
             await _context.Expenses.AddAsync(expense);
             await _context.SaveChangesAsync();
@@ -46,8 +61,10 @@ namespace backend.Services
             if (expense == null)
                 throw new ValidationException("Expense cannot be null.");
 
+            var userId = _currentUserService.GetUserId();
             var existingExpense = await _context.Expenses.FindAsync(id);
-            if (existingExpense == null)
+
+            if (existingExpense == null || (userId != null && existingExpense.UserId != userId.Value))
                 throw new NotFoundException("Expense", id);
 
             existingExpense.Name = expense.Name;
@@ -65,8 +82,10 @@ namespace backend.Services
 
         public async Task<bool> DeleteExpenseAsync(int id)
         {
+            var userId = _currentUserService.GetUserId();
             var existingExpense = await _context.Expenses.FindAsync(id);
-            if (existingExpense == null)
+
+            if (existingExpense == null || (userId != null && existingExpense.UserId != userId.Value))
                 throw new NotFoundException("Expense", id);
 
             _context.Expenses.Remove(existingExpense);

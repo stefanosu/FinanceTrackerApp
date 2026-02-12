@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using FinanceTrackerAPI.FinanceTracker.Data;
+using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
 using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
@@ -15,10 +16,21 @@ namespace FinanceTrackerAPI.Services
     public class AccountService : IAccountService
     {
         private readonly FinanceTrackerDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
 
-        public AccountService(FinanceTrackerDbContext context)
+        public AccountService(FinanceTrackerDbContext context, ICurrentUserService currentUserService)
         {
             _context = context;
+            _currentUserService = currentUserService;
+        }
+
+        private async Task<string?> GetCurrentUserEmailAsync()
+        {
+            var userId = _currentUserService.GetUserId();
+            if (userId == null) return null;
+
+            var user = await _context.Users.FindAsync(userId.Value);
+            return user?.Email;
         }
 
         public async Task<AccountDto> CreateAccountAsync(CreateAccountDto dto)
@@ -28,12 +40,19 @@ namespace FinanceTrackerAPI.Services
             {
                 throw new ValidationException("Account cannot be null.");
             }
+
+            var userEmail = await GetCurrentUserEmailAsync();
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                throw new ValidationException("User not authenticated.");
+            }
+
             // Map DTO to entity
             var account = new Account
             {
-                id = 0,
+                Id = 0,
                 Name = dto.Name,
-                Email = "default@email.com",
+                Email = userEmail,
                 AccountType = "Checking",
                 Balance = dto.InitialBalance
             };
@@ -43,7 +62,7 @@ namespace FinanceTrackerAPI.Services
             // Map entity to DTO and return
             return new AccountDto
             {
-                Id = account.id,
+                Id = account.Id,
                 Name = dto.Name,
                 Balance = account.Balance,
                 CreatedAt = DateTime.UtcNow,
@@ -54,17 +73,18 @@ namespace FinanceTrackerAPI.Services
 
         public async Task<AccountDto> GetAccountByIdAsync(int id)
         {
-            // Fetch from DB
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
-            // Handle not found
-            if (account == null)
+            var userEmail = await GetCurrentUserEmailAsync();
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == id);
+
+            // Verify account exists and belongs to current user
+            if (account == null || (userEmail != null && !account.Email.Equals(userEmail, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new NotFoundException("Account", id);
             }
-            // Map to DTO and return
+
             return new AccountDto
             {
-                Id = account.id,
+                Id = account.Id,
                 Name = account.Name,
                 Balance = account.Balance,
                 CreatedAt = DateTime.UtcNow,
@@ -75,10 +95,11 @@ namespace FinanceTrackerAPI.Services
 
         public async Task<AccountDto> UpdateAccountAsync(int id, UpdateAccountDto dto)
         {
-            // Find account
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
-            // Validate input
-            if (account == null)
+            var userEmail = await GetCurrentUserEmailAsync();
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == id);
+
+            // Verify account exists and belongs to current user
+            if (account == null || (userEmail != null && !account.Email.Equals(userEmail, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new NotFoundException("Account", id);
             }
@@ -86,17 +107,14 @@ namespace FinanceTrackerAPI.Services
             if (!string.IsNullOrEmpty(dto.Name))
                 account.Name = dto.Name;
 
-            if (!string.IsNullOrEmpty(dto.Email))
-                account.Email = dto.Email;
+            // Don't allow changing email - it links account to user
 
-            //Save changes
             await _context.SaveChangesAsync();
 
-            // Update properties
             return new AccountDto
             {
                 Name = account.Name,
-                Id = account.id,
+                Id = account.Id,
                 Balance = account.Balance,
                 CreatedAt = DateTime.UtcNow,
                 Description = string.Empty,
@@ -106,10 +124,17 @@ namespace FinanceTrackerAPI.Services
 
         public async Task<IEnumerable<AccountDto>> GetAllAccountsAsync()
         {
-            var accounts = await _context.Accounts.ToListAsync();
+            var userEmail = await GetCurrentUserEmailAsync();
+            if (string.IsNullOrEmpty(userEmail))
+                return Enumerable.Empty<AccountDto>();
+
+            var accounts = await _context.Accounts
+                .Where(a => a.Email.ToLower() == userEmail.ToLower())
+                .ToListAsync();
+
             return accounts.Select(a => new AccountDto
             {
-                Id = a.id,
+                Id = a.Id,
                 Name = a.Name,
                 Balance = a.Balance,
                 CreatedAt = DateTime.UtcNow,
@@ -120,8 +145,11 @@ namespace FinanceTrackerAPI.Services
 
         public async Task<bool> DeleteAccountAsync(int id)
         {
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.id == id);
-            if (account == null)
+            var userEmail = await GetCurrentUserEmailAsync();
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == id);
+
+            // Verify account exists and belongs to current user
+            if (account == null || (userEmail != null && !account.Email.Equals(userEmail, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new NotFoundException("Account", id);
             }
