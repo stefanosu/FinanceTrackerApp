@@ -1,3 +1,5 @@
+using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+
 using FluentValidation;
 
 namespace FinanceTrackerAPI.Services.Validators
@@ -45,7 +47,7 @@ namespace FinanceTrackerAPI.Services.Validators
                 .WithMessage($"Transaction type must be one of: {string.Join(", ", ValidTransactionTypes)}");
 
             // Date validation - not in the future, not unreasonably old
-            RuleFor(x => x.dateOnly)
+            RuleFor(x => x.Date)
                 .NotEmpty()
                 .WithMessage("Transaction date is required")
                 .Must(date => date <= DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)))

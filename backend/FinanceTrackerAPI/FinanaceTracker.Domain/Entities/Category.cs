@@ -1,23 +1,22 @@
 using System;
-using System.Collections.Generic;
 
-public class Category
+namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
 {
-    public required int Id { get; set; }
-    public required string Name { get; set; }
-    public Type type { get; set; } = typeof(Category);
-    public required string Description { get; set; }
-
-
-    public Category() { }
-
-
-    public Category(int id, string name, Type type, string description)
+    public class Category
     {
-        Id = id;
-        Name = name;
-        this.type = type;
-        Description = description;
-    }
+        public int Id { get; set; }
+        public required string Name { get; set; }
+        public required string CategoryType { get; set; }
+        public required string Description { get; set; }
 
+        public Category() { }
+
+        public Category(int id, string name, string categoryType, string description)
+        {
+            Id = id;
+            Name = name;
+            CategoryType = categoryType;
+            Description = description;
+        }
+    }
 }

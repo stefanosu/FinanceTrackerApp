@@ -1,24 +1,26 @@
-'use client';
+"use client";
 
-import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { z } from 'zod';
-import { login } from '../lib/api';
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { z } from "zod";
+import { login } from "../lib/api";
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof LoginFormData, string>>
+  >({});
   const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const mutation = useMutation({
@@ -26,7 +28,7 @@ export default function LoginPage() {
     onSuccess: () => {
       // Tokens are set as HTTP-only cookies by the backend
       // No need to manually store them
-      router.push('/dashboard');
+      router.push("/dashboard");
     },
     onError: (error: Error) => {
       setErrors({ email: error.message });
@@ -85,7 +87,7 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
+                  errors.email ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Email address"
               />
@@ -106,7 +108,7 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={handleChange}
                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  errors.password ? 'border-red-300' : 'border-gray-300'
+                  errors.password ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Password"
               />
@@ -122,7 +124,7 @@ export default function LoginPage() {
               disabled={mutation.isPending}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {mutation.isPending ? 'Signing in...' : 'Sign in'}
+              {mutation.isPending ? "Signing in..." : "Sign in"}
             </button>
           </div>
         </form>
@@ -130,4 +132,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

@@ -55,6 +55,15 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Middleware
             var response = context.Response;
             response.ContentType = "application/problem+json";
 
+            // Ensure CORS headers on error responses - browser blocks cross-origin reads without them
+            var origin = context.Request.Headers.Origin.FirstOrDefault();
+            if (!string.IsNullOrEmpty(origin) &&
+                (origin == "http://localhost:3000" || origin == "https://localhost:3000"))
+            {
+                response.Headers.Append("Access-Control-Allow-Origin", origin);
+                response.Headers.Append("Access-Control-Allow-Credentials", "true");
+            }
+
             // Determine status code and user-facing message
             var (statusCode, title, userMessage) = ClassifyException(exception);
 

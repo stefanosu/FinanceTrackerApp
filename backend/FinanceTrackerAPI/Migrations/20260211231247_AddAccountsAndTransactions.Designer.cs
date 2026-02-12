@@ -3,6 +3,7 @@ using System;
 using FinanceTrackerAPI.FinanceTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinanceTrackerAPI.Migrations
 {
     [DbContext(typeof(FinanceTrackerDbContext))]
-    partial class FinanceTrackerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260211231247_AddAccountsAndTransactions")]
+    partial class AddAccountsAndTransactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
