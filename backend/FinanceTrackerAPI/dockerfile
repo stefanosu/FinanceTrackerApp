@@ -1,21 +1,21 @@
-# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy csproj and restore as distinct layers
-COPY ./*.sln ./
-COPY FinanceTrackerAPI/*.csproj ./FinanceTrackerAPI/
-COPY FinanceTracker.Data/*.csproj ./FinanceTracker.Data/
-COPY FinanceTracker.Domain/*.csproj ./FinanceTracker.Domain/
+# Copy csproj and restore dependencies
+COPY *.csproj ./
 RUN dotnet restore
 
 # Copy everything else and build
-COPY . .
-WORKDIR /app/FinanceTrackerAPI
-RUN dotnet publish -c Release -o out
+COPY . ./
+RUN dotnet publish -c Release -o /app/out
 
-# Runtime stage
+# Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=build /app/FinanceTrackerAPI/out ./
+COPY --from=build /app/out .
+
+# Render uses PORT environment variable
+ENV ASPNETCORE_URLS=http://+:${PORT:-10000}
+
+EXPOSE 10000
 ENTRYPOINT ["dotnet", "FinanceTrackerAPI.dll"]

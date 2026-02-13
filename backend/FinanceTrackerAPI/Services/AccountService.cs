@@ -154,7 +154,10 @@ namespace FinanceTrackerAPI.Services
                 throw new NotFoundException("Account", id);
             }
 
-            _context.Accounts.Remove(account);
+            // Soft delete: mark as deleted instead of removing
+            account.IsDeleted = true;
+            account.DeletedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return true;
         }
