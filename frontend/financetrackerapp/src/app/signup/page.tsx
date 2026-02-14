@@ -10,10 +10,15 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5280";
 
 const signupSchema = z
   .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+    firstName: z.string().min(2, "First name must be at least 2 characters"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/\d/, "Password must contain at least one number"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -222,7 +227,7 @@ export default function SignupPage() {
                 className={`mt-1 block w-full px-3 py-2 border ${
                   errors.password ? "border-red-300" : "border-gray-300"
                 } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="At least 6 characters"
+                placeholder="Min 8 chars, upper, lower, number"
               />
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
