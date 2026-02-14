@@ -181,16 +181,23 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
-// Configure CORS for cookie support - restricted to specific methods and headers
+// Configure CORS for cookie support
+// Allow Vercel preview deployments by checking origin pattern
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",
-                "https://localhost:3000",
-                "https://finance-tracker-app-ivory.vercel.app"
-              )
+        policy.SetIsOriginAllowed(origin =>
+              {
+                  var uri = new Uri(origin);
+                  // Allow localhost for development
+                  if (uri.Host == "localhost") return true;
+                  // Allow main Vercel domain
+                  if (uri.Host == "finance-tracker-app-ivory.vercel.app") return true;
+                  // Allow all Vercel preview deployments
+                  if (uri.Host.EndsWith(".vercel.app")) return true;
+                  return false;
+              })
               .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
               .WithHeaders("Content-Type", "Authorization", "X-Requested-With", "Accept")
               .AllowCredentials(); // Required for cookies
