@@ -1,66 +1,149 @@
-# 💰 Personal Finance Tracker
+# FinanceTracker
 
-A full-stack personal finance budgeting app to help users track expenses, visualize spending trends, and manage their financial goals.
+A full-stack personal finance management application with AI-powered budgeting assistance.
 
-Built with:
-- **Frontend:** [Next.js](https://nextjs.org/) + [TypeScript](https://www.typescriptlang.org/)
-- **Backend:** [.NET Core (C#)](https://dotnet.microsoft.com/)
-- **Database:** SQL Server / PostgreSQL (customizable)
+**[Live Demo](https://finance-tracker-app-ivory.vercel.app)** | **Demo Login:** `demo@financetracker.dev` / `Demo123!`
 
----
+![Dashboard Screenshot](docs/images/dashboard.png)
 
-## 🧠 Features
+## Features
 
-- User authentication and secure login
-- Monthly and yearly budget planning
-- Expense categorization (e.g., food, rent, savings)
-- Interactive dashboards and charts
-- Transaction history and filtering
-- Goal tracking and financial summaries
+- **Expense Tracking** - Log and categorize daily expenses with detailed breakdowns
+- **Account Management** - Track balances across checking, savings, and credit accounts
+- **Analytics Dashboard** - Visualize spending patterns with interactive charts
+- **AI Budget Assistant** - Get personalized financial advice powered by Claude AI
+- **Secure Authentication** - JWT-based auth with HTTP-only cookies
 
----
+## Tech Stack
 
-## 📸 Preview
+### Backend
+- **.NET 8** - Web API with clean architecture
+- **Entity Framework Core** - ORM with PostgreSQL
+- **FluentValidation** - Request validation
+- **JWT Authentication** - Secure token-based auth
+- **Rate Limiting** - Protection against abuse
 
-_Optional: Insert screenshots or a Loom video demo here._
+### Frontend
+- **Next.js 16** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **TanStack Query** - Server state management
+- **Recharts** - Data visualization
+- **Tailwind CSS** - Utility-first styling
 
----
+### Infrastructure
+- **PostgreSQL** - Primary database (Supabase)
+- **Render** - Backend hosting
+- **Vercel** - Frontend hosting
+- **Claude API** - AI assistant integration
 
-## 🚀 Tech Stack
+## Architecture
 
-| Layer        | Tech Stack                          |
-|--------------|--------------------------------------|
-| Frontend     | Next.js, TypeScript, Tailwind CSS    |
-| Backend      | .NET Core, C#                        |
-| Database     | SQL Server or PostgreSQL             |
-| Auth         | JWT / ASP.NET Identity / NextAuth.js |
-| Hosting      | Vercel (frontend), Azure/AWS (API)   |
+![System Architecture](docs/images/architecture.png)
 
----
+![ERD Diagram](docs/images/erd.png)
 
-## 📦 Getting Started
+### Key Design Decisions
+
+- **Soft Delete Pattern** - Preserves data integrity for analytics and audit trails
+- **Global Query Filters** - Automatically excludes deleted records from queries
+- **Cross-Origin Cookie Auth** - Secure authentication across Vercel/Render domains
+- **Rate Limiting Policies** - Different limits for auth (5/min), API (100/min), and AI (10/min) endpoints
+
+## Getting Started
 
 ### Prerequisites
+- .NET 8 SDK
+- Node.js 18+
+- PostgreSQL (or use Supabase)
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- [Node.js (v18+)](https://nodejs.org/)
-- [PostgreSQL](https://www.postgresql.org/) or SQL Server
-
-### Clone the Repo
+### Backend Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/finance-tracker.git
-cd finance-tracker
+cd backend/FinanceTrackerAPI
 
+# Configure user secrets
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "your-postgres-connection-string"
+dotnet user-secrets set "Jwt:SecretKey" "your-secret-key-min-32-chars"
+dotnet user-secrets set "Claude:ApiKey" "sk-ant-your-key"
 
-## Backend Setup 
-cd backend
-dotnet restore
+# Run migrations
 dotnet ef database update
+
+# Start the server
 dotnet run
+```
 
+### Frontend Setup
 
-## Frontend Setup 
-cd frontend
+```bash
+cd frontend/financetrackerapp
+
+# Install dependencies
 npm install
+
+# Configure environment
+echo "NEXT_PUBLIC_API_URL=http://localhost:5280" > .env.local
+
+# Start development server
 npm run dev
+```
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/Auth/login` | POST | User authentication |
+| `/api/v1/Auth/logout` | POST | Clear session |
+| `/api/User/create` | POST | Register new user |
+| `/api/User/me` | GET | Current user profile |
+| `/api/Expense` | GET/POST | Expense management |
+| `/api/Account` | GET/POST | Account management |
+| `/api/Analytics/summary` | GET | Financial analytics |
+| `/api/BudgetAssistant/chat` | POST | AI assistant |
+
+## Project Structure
+
+```
+finance-tracker-app/
+├── backend/
+│   └── FinanceTrackerAPI/
+│       ├── FinanceTracker.API/        # Controllers, Middleware
+│       ├── FinanceTracker.Data/       # DbContext, Migrations
+│       ├── FinanceTracker.Domain/     # Entities, Interfaces
+│       └── Services/                  # Business logic, DTOs
+├── frontend/
+│   └── financetrackerapp/
+│       └── src/app/
+│           ├── components/            # Reusable UI components
+│           ├── hooks/                 # Custom React hooks
+│           ├── lib/                   # Utilities, API client
+│           └── (pages)/               # Route pages
+└── docs/
+    └── images/                        # Screenshots, diagrams
+```
+
+## Security Features
+
+- **Password Hashing** - BCrypt with salt
+- **JWT in HTTP-only Cookies** - XSS protection
+- **CORS Restrictions** - Whitelist allowed origins
+- **Rate Limiting** - Brute-force protection
+- **Input Validation** - FluentValidation on all endpoints
+- **Soft Delete** - Data preservation for audits
+
+## Future Roadmap
+
+- [ ] Savings goals tracking
+- [ ] Family budgeting features
+- [ ] Emotional spending analysis
+- [ ] Export to CSV/PDF
+- [ ] Recurring transactions
+- [ ] Mobile app (React Native)
+
+## License
+
+MIT
+
+---
+
+Built as a portfolio project demonstrating full-stack development with .NET and React.
