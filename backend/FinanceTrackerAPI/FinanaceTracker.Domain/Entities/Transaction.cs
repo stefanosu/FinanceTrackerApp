@@ -2,7 +2,7 @@ using System;
 
 namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
 {
-    public class Transaction
+    public class Transaction : ISoftDeletable
     {
         public int Id { get; set; }
         public int AccountId { get; set; }
@@ -11,6 +11,10 @@ namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
         public DateOnly Date { get; set; }
         public int CategoryId { get; set; }
         public required string Notes { get; set; }
+
+        // Soft delete fields
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
 
         public Transaction() { }
 

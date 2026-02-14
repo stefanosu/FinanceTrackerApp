@@ -64,9 +64,11 @@ namespace FinanceTrackerAPI.Services
             if (existingTransaction == null)
                 throw new NotFoundException("Transaction", id);
 
-            _context.Transactions.Remove(existingTransaction);
-            await _context.SaveChangesAsync();
+            // Soft delete: mark as deleted instead of removing
+            existingTransaction.IsDeleted = true;
+            existingTransaction.DeletedAt = DateTime.UtcNow;
 
+            await _context.SaveChangesAsync();
             return true;
         }
     }

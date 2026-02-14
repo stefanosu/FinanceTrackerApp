@@ -161,7 +161,12 @@ namespace FinanceTrackerAPI.Services
             {
                 throw new NotFoundException("User", id);
             }
-            _context.Users.Remove(user);
+
+            // Soft delete: mark as deleted instead of removing from database
+            // This preserves data integrity for analytics and audit trails
+            user.IsDeleted = true;
+            user.DeletedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return true;
         }

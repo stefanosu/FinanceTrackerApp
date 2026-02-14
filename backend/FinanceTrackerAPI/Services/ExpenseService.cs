@@ -88,7 +88,10 @@ namespace backend.Services
             if (existingExpense == null || (userId != null && existingExpense.UserId != userId.Value))
                 throw new NotFoundException("Expense", id);
 
-            _context.Expenses.Remove(existingExpense);
+            // Soft delete: mark as deleted instead of removing
+            existingExpense.IsDeleted = true;
+            existingExpense.DeletedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return true;
         }
