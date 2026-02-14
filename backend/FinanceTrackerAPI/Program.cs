@@ -186,7 +186,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "https://localhost:3000",
+                "https://finance-tracker-app-ivory.vercel.app"
+              )
               .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
               .WithHeaders("Content-Type", "Authorization", "X-Requested-With", "Accept")
               .AllowCredentials(); // Required for cookies
