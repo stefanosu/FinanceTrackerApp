@@ -238,8 +238,9 @@ using (var scope = app.Services.CreateScope())
     await DataSeeder.SeedData(context, environment, logger);
 }
 
-// Configure Kestrel to listen on HTTPS only in production
-// In development, we allow both for easier testing
+// Configure Kestrel URLs
+// In development, we allow both HTTP and HTTPS for easier testing
+// In production (Render, etc.), use HTTP only - the hosting platform handles SSL termination
 if (app.Environment.IsDevelopment())
 {
     app.Urls.Add("http://localhost:5280");  // HTTP - dev only
@@ -247,8 +248,9 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    // Production: HTTPS only
-    app.Urls.Add("https://localhost:7280");
+    // Production: Use PORT env var (Render sets this) or default to 10000
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+    app.Urls.Add($"http://+:{port}");
 }
 
 // Enable Swagger middleware to serve the Swagger UI and API documentation
