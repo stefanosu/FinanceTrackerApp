@@ -49,11 +49,13 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
                 var isDevelopment = HttpContext.RequestServices
                     .GetRequiredService<IHostEnvironment>().IsDevelopment();
 
+                // Cross-origin cookies require SameSite=None and Secure=true
+                // This allows Vercel frontend to receive cookies from Render backend
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = !isDevelopment, // Use HTTPS in production
-                    SameSite = SameSiteMode.Lax,
+                    Secure = true, // Required for SameSite=None
+                    SameSite = SameSiteMode.None, // Required for cross-origin
                     Expires = DateTimeOffset.UtcNow.AddDays(1) // Access token expires in 1 day
                 };
 
@@ -62,8 +64,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
                 var refreshCookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = !isDevelopment,
-                    SameSite = SameSiteMode.Lax,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
                     Expires = DateTimeOffset.UtcNow.AddDays(7) // Refresh token expires in 7 days
                 };
 

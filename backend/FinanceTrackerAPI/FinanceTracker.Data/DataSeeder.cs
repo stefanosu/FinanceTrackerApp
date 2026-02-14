@@ -24,11 +24,18 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
             IHostEnvironment environment,
             ILogger logger)
         {
-            // SECURITY: Only seed in development
-            if (!environment.IsDevelopment())
+            // SECURITY: Only seed in development OR if SEED_DEMO_DATA env var is set
+            // This allows demo data for portfolio showcases while keeping production safe by default
+            var seedDemoData = Environment.GetEnvironmentVariable("SEED_DEMO_DATA") == "true";
+            if (!environment.IsDevelopment() && !seedDemoData)
             {
                 logger.LogInformation("Skipping data seeding in non-development environment");
                 return;
+            }
+
+            if (seedDemoData && !environment.IsDevelopment())
+            {
+                logger.LogWarning("SEED_DEMO_DATA is enabled - seeding demo data in production for portfolio demo");
             }
 
             // Check if data already exists
