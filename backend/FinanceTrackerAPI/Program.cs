@@ -205,21 +205,10 @@ builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<IBudgetAssistantService, BudgetAssistantService>();
 builder.Services.AddHttpClient();
 
-// Configure HSTS (HTTP Strict Transport Security)
-// This tells browsers to always use HTTPS for this domain
-builder.Services.AddHsts(options =>
-{
-    options.MaxAge = TimeSpan.FromDays(365);  // Browser remembers for 1 year
-    options.IncludeSubDomains = true;          // Apply to all subdomains
-    options.Preload = true;                    // Allow inclusion in browser preload lists
-});
-
-// Configure HTTPS redirection
-builder.Services.AddHttpsRedirection(options =>
-{
-    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-    options.HttpsPort = 7280;  // Redirect to this HTTPS port
-});
+// NOTE: HSTS and HTTPS redirection are NOT configured here because:
+// - In production (Render), SSL termination happens at the proxy/load balancer
+// - The proxy handles HSTS headers and HTTPS enforcement
+// - Configuring them here would cause redirect loops behind a reverse proxy
 
 //Adding Data to DB
 builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
@@ -238,8 +227,9 @@ using (var scope = app.Services.CreateScope())
     await DataSeeder.SeedData(context, environment, logger);
 }
 
-// Configure Kestrel to listen on HTTPS only in production
-// In development, we allow both for easier testing
+// Configure Kestrel URLs
+// In development, we allow both HTTP and HTTPS for easier testing
+// In production (Render, etc.), use HTTP only - the hosting platform handles SSL termination
 if (app.Environment.IsDevelopment())
 {
     app.Urls.Add("http://localhost:5280");  // HTTP - dev only
@@ -247,8 +237,9 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    // Production: HTTPS only
-    app.Urls.Add("https://localhost:7280");
+    // Production: Use PORT env var (Render sets this) or default to 10000
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+    app.Urls.Add($"http://+:{port}");
 }
 
 // Enable Swagger middleware to serve the Swagger UI and API documentation
@@ -261,20 +252,16 @@ if (app.Environment.IsDevelopment())
 // ============================================================================
 // HTTPS REDIRECTION & HSTS
 // ============================================================================
-// UseHttpsRedirection: Redirects HTTP requests to HTTPS (301/307 redirect)
-// UseHsts: Sends Strict-Transport-Security header telling browsers to ONLY
-//          use HTTPS for this domain for the specified duration
-//
-// Why HSTS? Even with redirects, first request could be HTTP. HSTS tells
-// browser to automatically use HTTPS next time, preventing downgrade attacks.
+// NOTE: When deployed behind a reverse proxy (Render, Heroku, etc.), the proxy
+// handles SSL termination. The app receives HTTP requests from the proxy,
+// so we should NOT use HTTPS redirection - it would cause redirect loops.
+// HSTS headers are also handled by the proxy/CDN layer.
 // ============================================================================
-if (!app.Environment.IsDevelopment())
+// Only enable HTTPS redirection in development with local HTTPS
+if (app.Environment.IsDevelopment())
 {
-    // HSTS in production only - browsers remember this, hard to undo during dev
-    app.UseHsts();
-    // HTTPS redirection in production only - in dev, frontend uses http://localhost:5280
-    // and redirecting would break CORS preflight (redirects not allowed on OPTIONS)
-    app.UseHttpsRedirection();
+    // In dev, we can optionally redirect HTTP to HTTPS if testing locally
+    // app.UseHttpsRedirection();
 }
 
 // Configure the HTTP request pipeline
