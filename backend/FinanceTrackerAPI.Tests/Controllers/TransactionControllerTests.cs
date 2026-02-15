@@ -2,8 +2,8 @@ using Moq;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
 using FinanceTrackerAPI.FinanceTracker.API.Controllers;
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
 namespace FinanceTrackerAPI.Tests.Controllers
@@ -23,10 +23,10 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task GetAllTransactions_WithMockedData_ReturnsOkResult()
         {
             // Arrange
-            var mockTransactions = new List<Transaction>
+            var mockTransactions = new List<TransactionDto>
             {
-                new Transaction { Id = 1, AccountId = 1, Amount = 100, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Grocery shopping" },
-                new Transaction { Id = 2, AccountId = 1, Amount = 50, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 2, Notes = "Gas station" }
+                new TransactionDto { Id = 1, AccountId = 1, Amount = 100, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Grocery shopping" },
+                new TransactionDto { Id = 2, AccountId = 1, Amount = 50, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 2, Notes = "Gas station" }
             };
 
             _mockTransactionService.Setup(x => x.GetAllTransactionsAsync()).ReturnsAsync(mockTransactions);
@@ -37,7 +37,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             // Assert
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedTransactions = Assert.IsType<List<Transaction>>(okResult.Value);
+            var returnedTransactions = Assert.IsType<List<TransactionDto>>(okResult.Value);
             Assert.Equal(2, returnedTransactions.Count);
             Assert.Equal(100.00M, returnedTransactions[0].Amount);
             Assert.Equal(50.00M, returnedTransactions[1].Amount);
@@ -57,18 +57,18 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task CreateTransaction_WithValidData_ReturnsOkResult()
         {
             // Arrange
-            var newTransaction = new Transaction { AccountId = 1, Amount = 75, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 3, Notes = "Coffee shop" };
-            var createdTransaction = new Transaction { Id = 3, AccountId = 1, Amount = 75, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 3, Notes = "Coffee shop" };
+            var createDto = new CreateTransactionDto { AccountId = 1, Amount = 75, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 3, Notes = "Coffee shop" };
+            var createdTransaction = new TransactionDto { Id = 3, AccountId = 1, Amount = 75, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 3, Notes = "Coffee shop" };
 
-            _mockTransactionService.Setup(x => x.CreateTransactionAsync(newTransaction)).ReturnsAsync(createdTransaction);
+            _mockTransactionService.Setup(x => x.CreateTransactionAsync(It.IsAny<CreateTransactionDto>())).ReturnsAsync(createdTransaction);
 
             // Act
-            var result = await _controller.CreateTransaction(newTransaction);
+            var result = await _controller.CreateTransaction(createDto);
 
             // Assert
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedTransaction = Assert.IsType<Transaction>(okResult.Value);
+            var returnedTransaction = Assert.IsType<TransactionDto>(okResult.Value);
             Assert.Equal(75.00M, returnedTransaction.Amount);
             Assert.Equal(3, returnedTransaction.Id);
         }
@@ -77,11 +77,11 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task CreateTransaction_WhenExceptionOccurs_ThrowsException()
         {
             // Arrange
-            var newTransaction = new Transaction { AccountId = 1, Amount = -50, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Invalid amount" };
-            _mockTransactionService.Setup(x => x.CreateTransactionAsync(newTransaction)).ThrowsAsync(new ValidationException("Invalid transaction data"));
+            var createDto = new CreateTransactionDto { AccountId = 1, Amount = -50, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Invalid amount" };
+            _mockTransactionService.Setup(x => x.CreateTransactionAsync(It.IsAny<CreateTransactionDto>())).ThrowsAsync(new ValidationException("Invalid transaction data"));
 
             // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
-            await Assert.ThrowsAsync<ValidationException>(() => _controller.CreateTransaction(newTransaction));
+            await Assert.ThrowsAsync<ValidationException>(() => _controller.CreateTransaction(createDto));
         }
 
         [Fact]
@@ -89,18 +89,18 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var transactionId = 1;
-            var updateTransaction = new Transaction { AccountId = 1, Amount = 125, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Updated grocery shopping" };
-            var updatedTransaction = new Transaction { Id = 1, AccountId = 1, Amount = 125, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Updated grocery shopping" };
+            var updateDto = new UpdateTransactionDto { Amount = 125, Notes = "Updated grocery shopping" };
+            var updatedTransaction = new TransactionDto { Id = 1, AccountId = 1, Amount = 125, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Updated grocery shopping" };
 
-            _mockTransactionService.Setup(x => x.UpdateTransactionAsync(transactionId, updateTransaction)).ReturnsAsync(updatedTransaction);
+            _mockTransactionService.Setup(x => x.UpdateTransactionAsync(transactionId, It.IsAny<UpdateTransactionDto>())).ReturnsAsync(updatedTransaction);
 
             // Act
-            var result = await _controller.UpdateTransaction(transactionId, updateTransaction);
+            var result = await _controller.UpdateTransaction(transactionId, updateDto);
 
             // Assert
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedTransaction = Assert.IsType<Transaction>(okResult.Value);
+            var returnedTransaction = Assert.IsType<TransactionDto>(okResult.Value);
             Assert.Equal(transactionId, returnedTransaction.Id);
             Assert.Equal(125.00M, returnedTransaction.Amount);
         }
@@ -110,11 +110,11 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var transactionId = 999;
-            var updateTransaction = new Transaction { AccountId = 1, Amount = 200, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Non-existent transaction" };
-            _mockTransactionService.Setup(x => x.UpdateTransactionAsync(transactionId, updateTransaction)).ThrowsAsync(new NotFoundException("Transaction", transactionId));
+            var updateDto = new UpdateTransactionDto { Amount = 200, Notes = "Non-existent transaction" };
+            _mockTransactionService.Setup(x => x.UpdateTransactionAsync(transactionId, It.IsAny<UpdateTransactionDto>())).ThrowsAsync(new NotFoundException("Transaction", transactionId));
 
             // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
-            await Assert.ThrowsAsync<NotFoundException>(() => _controller.UpdateTransaction(transactionId, updateTransaction));
+            await Assert.ThrowsAsync<NotFoundException>(() => _controller.UpdateTransaction(transactionId, updateDto));
         }
 
         [Fact]

@@ -1,6 +1,7 @@
 using FinanceTrackerAPI.FinanceTracker.Data;
 using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
@@ -16,52 +17,75 @@ namespace FinanceTrackerAPI.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Transaction>> GetAllTransactionsAsync()
+        public async Task<IEnumerable<TransactionDto>> GetAllTransactionsAsync()
         {
-            return await _context.Transactions.ToListAsync();
+            var transactions = await _context.Transactions
+                .Where(t => !t.IsDeleted)
+                .ToListAsync();
+            return transactions.Select(MapToDto);
         }
 
-        public async Task<Transaction> GetTransactionByIdAsync(int id)
+        public async Task<TransactionDto> GetTransactionByIdAsync(int id)
         {
             var transaction = await _context.Transactions.FindAsync(id);
-            if (transaction == null)
+            if (transaction == null || transaction.IsDeleted)
                 throw new NotFoundException("Transaction", id);
 
-            return transaction;
+            return MapToDto(transaction);
         }
 
-        public async Task<Transaction> CreateTransactionAsync(Transaction transaction)
+        public async Task<TransactionDto> CreateTransactionAsync(CreateTransactionDto dto)
         {
-            if (transaction == null)
+            if (dto == null)
                 throw new ValidationException("Transaction cannot be null.");
+
+            var transaction = new Transaction
+            {
+                AccountId = dto.AccountId,
+                Amount = dto.Amount,
+                Type = dto.Type,
+                Date = dto.Date,
+                CategoryId = dto.CategoryId,
+                Notes = dto.Notes ?? string.Empty
+            };
 
             await _context.Transactions.AddAsync(transaction);
             await _context.SaveChangesAsync();
 
-            return transaction;
+            return MapToDto(transaction);
         }
 
-        public async Task<Transaction> UpdateTransactionAsync(int id, Transaction transaction)
+        public async Task<TransactionDto> UpdateTransactionAsync(int id, UpdateTransactionDto dto)
         {
-            if (transaction == null)
+            if (dto == null)
                 throw new ValidationException("Transaction cannot be null.");
 
             var existingTransaction = await _context.Transactions.FindAsync(id);
-            if (existingTransaction == null)
+            if (existingTransaction == null || existingTransaction.IsDeleted)
                 throw new NotFoundException("Transaction", id);
 
-            // Update transaction properties here
-            // Note: This is a placeholder - you'll need to define which properties to update
-            // existingTransaction.Property = transaction.Property;
+            // Partial update: only update provided fields
+            if (dto.AccountId.HasValue)
+                existingTransaction.AccountId = dto.AccountId.Value;
+            if (dto.Amount.HasValue)
+                existingTransaction.Amount = dto.Amount.Value;
+            if (!string.IsNullOrEmpty(dto.Type))
+                existingTransaction.Type = dto.Type;
+            if (dto.Date.HasValue)
+                existingTransaction.Date = dto.Date.Value;
+            if (dto.CategoryId.HasValue)
+                existingTransaction.CategoryId = dto.CategoryId.Value;
+            if (dto.Notes != null)
+                existingTransaction.Notes = dto.Notes;
 
             await _context.SaveChangesAsync();
-            return existingTransaction;
+            return MapToDto(existingTransaction);
         }
 
         public async Task<bool> DeleteTransactionAsync(int id)
         {
             var existingTransaction = await _context.Transactions.FindAsync(id);
-            if (existingTransaction == null)
+            if (existingTransaction == null || existingTransaction.IsDeleted)
                 throw new NotFoundException("Transaction", id);
 
             // Soft delete: mark as deleted instead of removing
@@ -70,6 +94,23 @@ namespace FinanceTrackerAPI.Services
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>
+        /// Maps a Transaction entity to TransactionDto.
+        /// </summary>
+        private static TransactionDto MapToDto(Transaction transaction)
+        {
+            return new TransactionDto
+            {
+                Id = transaction.Id,
+                AccountId = transaction.AccountId,
+                Amount = transaction.Amount,
+                Type = transaction.Type,
+                Date = transaction.Date,
+                CategoryId = transaction.CategoryId,
+                Notes = transaction.Notes
+            };
         }
     }
 }

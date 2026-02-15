@@ -1,4 +1,4 @@
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
 using Microsoft.AspNetCore.Authorization;
@@ -21,27 +21,43 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpGet("all")]
+        [ProducesResponseType(typeof(IEnumerable<CategoryDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllCategories()
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
             return Ok(categories);
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateCategory([FromBody] ExpenseCategory category)
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetCategoryById(int id)
         {
-            var createdCategory = await _categoryService.CreateCategoryAsync(category);
+            var category = await _categoryService.GetCategoryByIdAsync(id);
+            return Ok(category);
+        }
+
+        [HttpPost("create")]
+        [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto dto)
+        {
+            var createdCategory = await _categoryService.CreateCategoryAsync(dto);
             return Ok(createdCategory);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] ExpenseCategory category)
+        [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryDto dto)
         {
-            var updatedCategory = await _categoryService.UpdateCategoryAsync(id, category);
+            var updatedCategory = await _categoryService.UpdateCategoryAsync(id, dto);
             return Ok(updatedCategory);
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             await _categoryService.DeleteCategoryAsync(id);

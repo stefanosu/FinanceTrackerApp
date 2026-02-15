@@ -2,8 +2,8 @@ using Moq;
 using Xunit;
 using Microsoft.AspNetCore.Mvc;
 using FinanceTrackerAPI.FinanceTracker.API.Controllers;
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using FinanceTrackerAPI.Services.Dtos;
 using FinanceTrackerAPI.Services.Interfaces;
 
 namespace FinanceTrackerAPI.Tests.Controllers
@@ -23,10 +23,10 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task GetAllCategories_WithMockedData_ReturnsOkResult()
         {
             // Arrange
-            var mockCategories = new List<ExpenseCategory>
+            var mockCategories = new List<CategoryDto>
             {
-                new ExpenseCategory { Id = 1, Name = "Food", Description = "Food and dining expenses" },
-                new ExpenseCategory { Id = 2, Name = "Transport", Description = "Transportation costs" }
+                new CategoryDto { Id = 1, Name = "Food", Description = "Food and dining expenses" },
+                new CategoryDto { Id = 2, Name = "Transport", Description = "Transportation costs" }
             };
 
             _mockCategoryService.Setup(x => x.GetAllCategoriesAsync()).ReturnsAsync(mockCategories);
@@ -37,7 +37,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             // Assert
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedCategories = Assert.IsType<List<ExpenseCategory>>(okResult.Value);
+            var returnedCategories = Assert.IsType<List<CategoryDto>>(okResult.Value);
             Assert.Equal(2, returnedCategories.Count);
             Assert.Equal("Food", returnedCategories[0].Name);
             Assert.Equal("Transport", returnedCategories[1].Name);
@@ -57,18 +57,18 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task CreateCategory_WithValidData_ReturnsOkResult()
         {
             // Arrange
-            var newCategory = new ExpenseCategory { Name = "Entertainment", Description = "Entertainment expenses" };
-            var createdCategory = new ExpenseCategory { Id = 3, Name = "Entertainment", Description = "Entertainment expenses" };
+            var createDto = new CreateCategoryDto { Name = "Entertainment", Description = "Entertainment expenses" };
+            var createdCategory = new CategoryDto { Id = 3, Name = "Entertainment", Description = "Entertainment expenses" };
 
-            _mockCategoryService.Setup(x => x.CreateCategoryAsync(newCategory)).ReturnsAsync(createdCategory);
+            _mockCategoryService.Setup(x => x.CreateCategoryAsync(It.IsAny<CreateCategoryDto>())).ReturnsAsync(createdCategory);
 
             // Act
-            var result = await _controller.CreateCategory(newCategory);
+            var result = await _controller.CreateCategory(createDto);
 
             // Assert
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedCategory = Assert.IsType<ExpenseCategory>(okResult.Value);
+            var returnedCategory = Assert.IsType<CategoryDto>(okResult.Value);
             Assert.Equal("Entertainment", returnedCategory.Name);
             Assert.Equal(3, returnedCategory.Id);
         }
@@ -77,11 +77,11 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task CreateCategory_WhenExceptionOccurs_ThrowsException()
         {
             // Arrange
-            var newCategory = new ExpenseCategory { Name = "Invalid", Description = "Invalid category" };
-            _mockCategoryService.Setup(x => x.CreateCategoryAsync(newCategory)).ThrowsAsync(new ValidationException("Invalid category data"));
+            var createDto = new CreateCategoryDto { Name = "Invalid", Description = "Invalid category" };
+            _mockCategoryService.Setup(x => x.CreateCategoryAsync(It.IsAny<CreateCategoryDto>())).ThrowsAsync(new ValidationException("Invalid category data"));
 
             // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
-            await Assert.ThrowsAsync<ValidationException>(() => _controller.CreateCategory(newCategory));
+            await Assert.ThrowsAsync<ValidationException>(() => _controller.CreateCategory(createDto));
         }
 
         [Fact]
@@ -89,18 +89,18 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var categoryId = 1;
-            var updateCategory = new ExpenseCategory { Name = "Updated Food", Description = "Updated food description" };
-            var updatedCategory = new ExpenseCategory { Id = 1, Name = "Updated Food", Description = "Updated food description" };
+            var updateDto = new UpdateCategoryDto { Name = "Updated Food", Description = "Updated food description" };
+            var updatedCategory = new CategoryDto { Id = 1, Name = "Updated Food", Description = "Updated food description" };
 
-            _mockCategoryService.Setup(x => x.UpdateCategoryAsync(categoryId, updateCategory)).ReturnsAsync(updatedCategory);
+            _mockCategoryService.Setup(x => x.UpdateCategoryAsync(categoryId, It.IsAny<UpdateCategoryDto>())).ReturnsAsync(updatedCategory);
 
             // Act
-            var result = await _controller.UpdateCategory(categoryId, updateCategory);
+            var result = await _controller.UpdateCategory(categoryId, updateDto);
 
             // Assert
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedCategory = Assert.IsType<ExpenseCategory>(okResult.Value);
+            var returnedCategory = Assert.IsType<CategoryDto>(okResult.Value);
             Assert.Equal(categoryId, returnedCategory.Id);
             Assert.Equal("Updated Food", returnedCategory.Name);
         }
@@ -110,11 +110,11 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var categoryId = 999;
-            var updateCategory = new ExpenseCategory { Name = "Non-existent", Description = "This category doesn't exist" };
-            _mockCategoryService.Setup(x => x.UpdateCategoryAsync(categoryId, updateCategory)).ThrowsAsync(new NotFoundException("Category", categoryId));
+            var updateDto = new UpdateCategoryDto { Name = "Non-existent", Description = "This category doesn't exist" };
+            _mockCategoryService.Setup(x => x.UpdateCategoryAsync(categoryId, It.IsAny<UpdateCategoryDto>())).ThrowsAsync(new NotFoundException("Category", categoryId));
 
             // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
-            await Assert.ThrowsAsync<NotFoundException>(() => _controller.UpdateCategory(categoryId, updateCategory));
+            await Assert.ThrowsAsync<NotFoundException>(() => _controller.UpdateCategory(categoryId, updateDto));
         }
 
         [Fact]

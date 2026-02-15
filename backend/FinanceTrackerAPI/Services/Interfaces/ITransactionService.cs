@@ -1,13 +1,13 @@
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+using FinanceTrackerAPI.Services.Dtos;
 
 namespace FinanceTrackerAPI.Services.Interfaces
 {
     public interface ITransactionService
     {
-        Task<IEnumerable<Transaction>> GetAllTransactionsAsync();
-        Task<Transaction> GetTransactionByIdAsync(int id);
-        Task<Transaction> CreateTransactionAsync(Transaction transaction);
-        Task<Transaction> UpdateTransactionAsync(int id, Transaction transaction);
+        Task<IEnumerable<TransactionDto>> GetAllTransactionsAsync();
+        Task<TransactionDto> GetTransactionByIdAsync(int id);
+        Task<TransactionDto> CreateTransactionAsync(CreateTransactionDto dto);
+        Task<TransactionDto> UpdateTransactionAsync(int id, UpdateTransactionDto dto);
         Task<bool> DeleteTransactionAsync(int id);
     }
 }
