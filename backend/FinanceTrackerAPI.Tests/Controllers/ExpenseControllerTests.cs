@@ -2,8 +2,8 @@ using Xunit;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
 using FinanceTrackerAPI.FinanceTracker.API.Controllers;
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
 using FinanceTrackerAPI.FinanceTracker.Domain.Exceptions;
+using FinanceTrackerAPI.Services.Dtos;
 using backend.Services.Interfaces;
 
 namespace FinanceTrackerAPI.Tests.Controllers
@@ -23,9 +23,9 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task GetAllExpenses_WithMockedData_ReturnsOkResult()
         {
             // Arrange - Set up your test data and conditions
-            var mockExpenses = new List<Expense>
+            var mockExpenses = new List<ExpenseDto>
             {
-                new Expense {
+                new ExpenseDto {
                     Id = 1,
                     Name = "Groceries",
                     Amount = 50.00M,
@@ -34,10 +34,9 @@ namespace FinanceTrackerAPI.Tests.Controllers
                     Category = "Food",
                     SubCategory = "Groceries",
                     PaymentMethod = "Credit Card",
-                    Notes = "Weekly groceries",
-                    UserId = 1
+                    Notes = "Weekly groceries"
                 },
-                new Expense {
+                new ExpenseDto {
                     Id = 2,
                     Name = "Gas",
                     Amount = 30.00M,
@@ -46,8 +45,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                     Category = "Transportation",
                     SubCategory = "Fuel",
                     PaymentMethod = "Cash",
-                    Notes = "Car fuel",
-                    UserId = 1
+                    Notes = "Car fuel"
                 }
             };
 
@@ -60,7 +58,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             // Assert - Verify the results are what you expect
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedExpenses = Assert.IsType<List<Expense>>(okResult.Value);
+            var returnedExpenses = Assert.IsType<List<ExpenseDto>>(okResult.Value);
             Assert.Equal(2, returnedExpenses.Count);
             Assert.Equal("Groceries", returnedExpenses[0].Name);
             Assert.Equal("Gas", returnedExpenses[1].Name);
@@ -75,7 +73,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var expenseId = 1;
-            var mockExpense = new Expense
+            var mockExpense = new ExpenseDto
             {
                 Id = expenseId,
                 Name = "Groceries",
@@ -85,8 +83,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 Category = "Food",
                 SubCategory = "Groceries",
                 PaymentMethod = "Credit Card",
-                Notes = "Weekly groceries",
-                UserId = 1
+                Notes = "Weekly groceries"
             };
 
             _mockExpenseService.Setup(x => x.GetExpenseByIdAsync(expenseId))
@@ -98,7 +95,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
             // Assert
             Assert.NotNull(result);
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var returnedExpense = Assert.IsType<Expense>(okResult.Value);
+            var returnedExpense = Assert.IsType<ExpenseDto>(okResult.Value);
             Assert.Equal(expenseId, returnedExpense.Id);
             Assert.Equal("Groceries", returnedExpense.Name);
 
@@ -134,6 +131,129 @@ namespace FinanceTrackerAPI.Tests.Controllers
 
             // Verify service was called
             _mockExpenseService.Verify(x => x.GetExpenseByIdAsync(expenseId), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateExpense_WithValidDto_ReturnsOkResult()
+        {
+            // Arrange
+            var createDto = new CreateExpenseDto
+            {
+                Name = "Coffee",
+                Amount = 5.00M,
+                Description = "Morning coffee",
+                Date = DateTime.Now,
+                Category = "Food & Dining",
+                SubCategory = "Coffee",
+                PaymentMethod = "Cash",
+                Notes = "Daily coffee"
+            };
+
+            var createdExpense = new ExpenseDto
+            {
+                Id = 1,
+                Name = createDto.Name,
+                Amount = createDto.Amount,
+                Description = createDto.Description,
+                Date = createDto.Date,
+                Category = createDto.Category,
+                SubCategory = createDto.SubCategory,
+                PaymentMethod = createDto.PaymentMethod,
+                Notes = createDto.Notes
+            };
+
+            _mockExpenseService.Setup(x => x.CreateExpenseAsync(It.IsAny<CreateExpenseDto>()))
+                .ReturnsAsync(createdExpense);
+
+            // Act
+            var result = await _controller.CreateExpense(createDto);
+
+            // Assert
+            Assert.NotNull(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnedExpense = Assert.IsType<ExpenseDto>(okResult.Value);
+            Assert.Equal(1, returnedExpense.Id);
+            Assert.Equal("Coffee", returnedExpense.Name);
+
+            // Verify service was called
+            _mockExpenseService.Verify(x => x.CreateExpenseAsync(It.IsAny<CreateExpenseDto>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateExpense_WithValidDto_ReturnsOkResult()
+        {
+            // Arrange
+            var expenseId = 1;
+            var updateDto = new UpdateExpenseDto
+            {
+                Name = "Updated Groceries",
+                Amount = 75.00M
+            };
+
+            var updatedExpense = new ExpenseDto
+            {
+                Id = expenseId,
+                Name = "Updated Groceries",
+                Amount = 75.00M,
+                Description = "Grocery shopping",
+                Date = DateTime.Now,
+                Category = "Food",
+                SubCategory = "Groceries",
+                PaymentMethod = "Credit Card",
+                Notes = "Weekly groceries"
+            };
+
+            _mockExpenseService.Setup(x => x.UpdateExpenseAsync(expenseId, It.IsAny<UpdateExpenseDto>()))
+                .ReturnsAsync(updatedExpense);
+
+            // Act
+            var result = await _controller.UpdateExpense(expenseId, updateDto);
+
+            // Assert
+            Assert.NotNull(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnedExpense = Assert.IsType<ExpenseDto>(okResult.Value);
+            Assert.Equal(expenseId, returnedExpense.Id);
+            Assert.Equal("Updated Groceries", returnedExpense.Name);
+            Assert.Equal(75.00M, returnedExpense.Amount);
+
+            // Verify service was called
+            _mockExpenseService.Verify(x => x.UpdateExpenseAsync(expenseId, It.IsAny<UpdateExpenseDto>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteExpense_WithValidId_ReturnsOkResult()
+        {
+            // Arrange
+            var expenseId = 1;
+            _mockExpenseService.Setup(x => x.DeleteExpenseAsync(expenseId))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _controller.DeleteExpense(expenseId);
+
+            // Assert
+            Assert.NotNull(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Expense deleted successfully.", okResult.Value);
+
+            // Verify service was called
+            _mockExpenseService.Verify(x => x.DeleteExpenseAsync(expenseId), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteExpense_WithNonExistentId_ThrowsNotFoundException()
+        {
+            // Arrange
+            var expenseId = 999;
+            _mockExpenseService.Setup(x => x.DeleteExpenseAsync(expenseId))
+                .ThrowsAsync(new NotFoundException("Expense", expenseId));
+
+            // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
+            await Assert.ThrowsAsync<NotFoundException>(() => _controller.DeleteExpense(expenseId));
+
+            // Verify service was called
+            _mockExpenseService.Verify(x => x.DeleteExpenseAsync(expenseId), Times.Once);
         }
     }
 }

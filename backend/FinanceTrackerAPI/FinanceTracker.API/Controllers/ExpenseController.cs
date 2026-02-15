@@ -1,6 +1,6 @@
 using backend.Services.Interfaces;
 
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+using FinanceTrackerAPI.Services.Dtos;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +22,7 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpGet("all")]
+        [ProducesResponseType(typeof(IEnumerable<ExpenseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllExpenses()
         {
             var expenses = await _expenseService.GetAllExpensesAsync();
@@ -29,6 +30,8 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ExpenseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetExpenseById(int id)
         {
             var expense = await _expenseService.GetExpenseByIdAsync(id);
@@ -36,20 +39,26 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateExpense([FromBody] Expense expense)
+        [ProducesResponseType(typeof(ExpenseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseDto dto)
         {
-            var createdExpense = await _expenseService.CreateExpenseAsync(expense);
+            var createdExpense = await _expenseService.CreateExpenseAsync(dto);
             return Ok(createdExpense);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateExpense(int id, [FromBody] Expense expense)
+        [ProducesResponseType(typeof(ExpenseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateExpense(int id, [FromBody] UpdateExpenseDto dto)
         {
-            var updatedExpense = await _expenseService.UpdateExpenseAsync(id, expense);
+            var updatedExpense = await _expenseService.UpdateExpenseAsync(id, dto);
             return Ok(updatedExpense);
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteExpense(int id)
         {
             await _expenseService.DeleteExpenseAsync(id);

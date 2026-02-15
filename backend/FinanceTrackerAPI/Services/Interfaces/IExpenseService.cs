@@ -1,18 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using FinanceTrackerAPI.FinanceTracker.Domain.Entities;
+using FinanceTrackerAPI.Services.Dtos;
 
 namespace backend.Services.Interfaces
 {
     public interface IExpenseService
     {
-        Task<IEnumerable<Expense>> GetAllExpensesAsync();
-        Task<Expense> GetExpenseByIdAsync(int id);
-        Task<Expense> CreateExpenseAsync(Expense expense);
-        Task<Expense> UpdateExpenseAsync(int id, Expense expense);
+        Task<IEnumerable<ExpenseDto>> GetAllExpensesAsync();
+        Task<ExpenseDto> GetExpenseByIdAsync(int id);
+        Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto);
+        Task<ExpenseDto> UpdateExpenseAsync(int id, UpdateExpenseDto dto);
         Task<bool> DeleteExpenseAsync(int id);
     }
 }
