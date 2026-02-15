@@ -33,6 +33,8 @@ builder.Services.AddControllers(options =>
 {
     // Use camelCase for JSON property names (frontend expects "message" not "Message")
     options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    // Allow case-insensitive property matching for deserialization (frontend sends "firstName", backend expects "FirstName")
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
 // Add FluentValidation

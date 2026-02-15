@@ -56,9 +56,9 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Middleware
             response.ContentType = "application/problem+json";
 
             // Ensure CORS headers on error responses - browser blocks cross-origin reads without them
+            // Must match the same origins allowed in Program.cs CORS policy
             var origin = context.Request.Headers.Origin.FirstOrDefault();
-            if (!string.IsNullOrEmpty(origin) &&
-                (origin == "http://localhost:3000" || origin == "https://localhost:3000"))
+            if (!string.IsNullOrEmpty(origin) && IsAllowedOrigin(origin))
             {
                 response.Headers.Append("Access-Control-Allow-Origin", origin);
                 response.Headers.Append("Access-Control-Allow-Credentials", "true");
@@ -210,6 +210,29 @@ namespace FinanceTrackerAPI.FinanceTracker.API.Middleware
                 exception.GetType().Name,
                 exception.Message
             );
+        }
+
+        /// <summary>
+        /// Checks if the origin is allowed for CORS.
+        /// Must match the same logic as Program.cs CORS policy.
+        /// </summary>
+        private static bool IsAllowedOrigin(string origin)
+        {
+            try
+            {
+                var uri = new Uri(origin);
+                // Allow localhost for development
+                if (uri.Host == "localhost") return true;
+                // Allow main Vercel domain
+                if (uri.Host == "finance-tracker-app-ivory.vercel.app") return true;
+                // Allow all Vercel preview deployments
+                if (uri.Host.EndsWith(".vercel.app")) return true;
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
