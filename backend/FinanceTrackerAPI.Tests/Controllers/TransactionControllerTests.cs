@@ -25,8 +25,8 @@ namespace FinanceTrackerAPI.Tests.Controllers
             // Arrange
             var mockTransactions = new List<Transaction>
             {
-                new Transaction { Id = 1, AccountId = 1, Amount = 100, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Grocery shopping" },
-                new Transaction { Id = 2, AccountId = 1, Amount = 50, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 2, Notes = "Gas station" }
+                new Transaction { Id = 1, AccountId = 1, Amount = 100, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Grocery shopping" },
+                new Transaction { Id = 2, AccountId = 1, Amount = 50, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 2, Notes = "Gas station" }
             };
 
             _mockTransactionService.Setup(x => x.GetAllTransactionsAsync()).ReturnsAsync(mockTransactions);
@@ -57,8 +57,8 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task CreateTransaction_WithValidData_ReturnsOkResult()
         {
             // Arrange
-            var newTransaction = new Transaction { AccountId = 1, Amount = 75, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 3, Notes = "Coffee shop" };
-            var createdTransaction = new Transaction { Id = 3, AccountId = 1, Amount = 75, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 3, Notes = "Coffee shop" };
+            var newTransaction = new Transaction { AccountId = 1, Amount = 75, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 3, Notes = "Coffee shop" };
+            var createdTransaction = new Transaction { Id = 3, AccountId = 1, Amount = 75, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 3, Notes = "Coffee shop" };
 
             _mockTransactionService.Setup(x => x.CreateTransactionAsync(newTransaction)).ReturnsAsync(createdTransaction);
 
@@ -77,7 +77,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
         public async Task CreateTransaction_WhenExceptionOccurs_ThrowsException()
         {
             // Arrange
-            var newTransaction = new Transaction { AccountId = 1, Amount = -50, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Invalid amount" };
+            var newTransaction = new Transaction { AccountId = 1, Amount = -50, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Invalid amount" };
             _mockTransactionService.Setup(x => x.CreateTransactionAsync(newTransaction)).ThrowsAsync(new ValidationException("Invalid transaction data"));
 
             // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
@@ -89,8 +89,8 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var transactionId = 1;
-            var updateTransaction = new Transaction { AccountId = 1, Amount = 125, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Updated grocery shopping" };
-            var updatedTransaction = new Transaction { Id = 1, AccountId = 1, Amount = 125, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Updated grocery shopping" };
+            var updateTransaction = new Transaction { AccountId = 1, Amount = 125, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Updated grocery shopping" };
+            var updatedTransaction = new Transaction { Id = 1, AccountId = 1, Amount = 125, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Updated grocery shopping" };
 
             _mockTransactionService.Setup(x => x.UpdateTransactionAsync(transactionId, updateTransaction)).ReturnsAsync(updatedTransaction);
 
@@ -110,7 +110,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
         {
             // Arrange
             var transactionId = 999;
-            var updateTransaction = new Transaction { AccountId = 1, Amount = 200, Type = "Expense", dateOnly = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Non-existent transaction" };
+            var updateTransaction = new Transaction { AccountId = 1, Amount = 200, Type = "Expense", Date = DateOnly.FromDateTime(DateTime.UtcNow), CategoryId = 1, Notes = "Non-existent transaction" };
             _mockTransactionService.Setup(x => x.UpdateTransactionAsync(transactionId, updateTransaction)).ThrowsAsync(new NotFoundException("Transaction", transactionId));
 
             // Act & Assert - Exception propagates to GlobalExceptionHandler middleware

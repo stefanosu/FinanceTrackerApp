@@ -98,7 +98,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task Login_WithNullRequest_ThrowsException()
+        public async Task Login_WithNullRequest_ReturnsBadRequest()
         {
             // Arrange - Setup HttpContext for cookie operations
             var mockHostEnvironment = new Mock<IHostEnvironment>();
@@ -118,11 +118,13 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 HttpContext = httpContext
             };
 
-            // Act & Assert
-            // FluentValidation will handle null in production, but in unit tests without middleware,
-            // passing null to a non-nullable parameter will cause issues
-            // This test verifies that null requests are handled (by FluentValidation in production)
-            await Assert.ThrowsAsync<NullReferenceException>(() => _controller.Login(null!));
+            // Act
+            var result = await _controller.Login(null);
+
+            // Assert - Controller now returns BadRequest for null requests
+            Assert.NotNull(result);
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequestResult.StatusCode);
             _mockAuthService.Verify(x => x.LoginAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }

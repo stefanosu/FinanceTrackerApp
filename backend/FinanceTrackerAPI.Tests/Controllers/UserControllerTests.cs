@@ -18,11 +18,13 @@ namespace FinanceTrackerAPI.Tests.Controllers
     {
         private readonly Mock<ILogger<UserController>> _mockLogger;
         private readonly Mock<IUserService> _mockUserService;
+        private readonly Mock<ICurrentUserService> _mockCurrentUserService;
 
         public UserControllerTests()
         {
             _mockLogger = new Mock<ILogger<UserController>>();
             _mockUserService = new Mock<IUserService>();
+            _mockCurrentUserService = new Mock<ICurrentUserService>();
         }
 
         [Fact]
@@ -42,7 +44,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.GetUserByIdAsync(1))
                 .ReturnsAsync(expectedUser);
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act
             var result = await controller.GetUserById(1);
@@ -64,7 +66,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.GetUserByIdAsync(999))
                 .ThrowsAsync(new NotFoundException("User", 999));
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(() => controller.GetUserById(999));
@@ -99,7 +101,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.GetAllUsersAsync())
                 .ReturnsAsync(expectedUsers);
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act
             var result = await controller.GetAllUsers();
@@ -140,7 +142,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.CreateUserAsync(It.IsAny<CreateUserDto>()))
                 .ReturnsAsync(expectedUser);
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act
             var result = await controller.CreateUser(createDto);
@@ -162,7 +164,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.CreateUserAsync(null!))
                 .ThrowsAsync(new ValidationException("User cannot be null."));
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<ValidationException>(() => controller.CreateUser(null!));
@@ -196,7 +198,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.UpdateUserAsync(userId, It.IsAny<UpdateUserDto>()))
                 .ReturnsAsync(expectedUser);
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act
             var result = await controller.UpdateUser(userId, updateDto);
@@ -228,7 +230,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.UpdateUserAsync(userId, It.IsAny<UpdateUserDto>()))
                 .ThrowsAsync(new NotFoundException("User", userId));
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<NotFoundException>(() => controller.UpdateUser(userId, updateDto));
@@ -243,7 +245,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.UpdateUserAsync(1, null!))
                 .ThrowsAsync(new ValidationException("User cannot be null."));
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<ValidationException>(() => controller.UpdateUser(1, null!));
@@ -259,7 +261,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.DeleteUserAsync(userId))
                 .ReturnsAsync(true);
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act
             var result = await controller.DeleteUser(userId);
@@ -281,7 +283,7 @@ namespace FinanceTrackerAPI.Tests.Controllers
                 .Setup(x => x.DeleteUserAsync(userId))
                 .ThrowsAsync(new NotFoundException("User", userId));
 
-            var controller = new UserController(_mockLogger.Object, _mockUserService.Object);
+            var controller = new UserController(_mockLogger.Object, _mockUserService.Object, _mockCurrentUserService.Object);
 
             // Act & Assert - Exception propagates to GlobalExceptionHandler middleware
             await Assert.ThrowsAsync<NotFoundException>(() => controller.DeleteUser(userId));
