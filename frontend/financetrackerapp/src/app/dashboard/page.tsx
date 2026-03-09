@@ -42,6 +42,28 @@ interface User {
   email: string;
 }
 
+interface SavingsGoal {
+  id: number;
+  name: string;
+  description: string;
+  targetAmount: number;
+  currentAmount: number;
+  progressPercentage: number;
+  targetDate: string | null;
+  category: string;
+  isCompleted: boolean;
+}
+
+interface RecurringTransaction {
+  id: number;
+  description: string;
+  amount: number;
+  type: string;
+  frequency: string;
+  nextDueDate: string;
+  isActive: boolean;
+}
+
 async function fetchExpenses(): Promise<Expense[]> {
   const response = await fetch(`${API_BASE_URL}/api/Expense/all`, {
     credentials: "include",
@@ -66,6 +88,22 @@ async function fetchCurrentUser(): Promise<User> {
   return response.json();
 }
 
+async function fetchSavingsGoals(): Promise<SavingsGoal[]> {
+  const response = await fetch(`${API_BASE_URL}/api/SavingsGoal/all`, {
+    credentials: "include",
+  });
+  if (!response.ok) return [];
+  return response.json();
+}
+
+async function fetchRecurringTransactions(): Promise<RecurringTransaction[]> {
+  const response = await fetch(`${API_BASE_URL}/api/RecurringTransaction/all`, {
+    credentials: "include",
+  });
+  if (!response.ok) return [];
+  return response.json();
+}
+
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -82,6 +120,18 @@ export default function DashboardPage() {
   const { data: expenses = [], isLoading: expensesLoading } = useQuery({
     queryKey: ["expenses"],
     queryFn: fetchExpenses,
+    enabled: !!user,
+  });
+
+  const { data: savingsGoals = [] } = useQuery({
+    queryKey: ["savingsGoals"],
+    queryFn: fetchSavingsGoals,
+    enabled: !!user,
+  });
+
+  const { data: recurringTransactions = [] } = useQuery({
+    queryKey: ["recurringTransactions"],
+    queryFn: fetchRecurringTransactions,
     enabled: !!user,
   });
 
@@ -548,6 +598,94 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ))}
+              </div>
+            )}
+          </GlassCard>
+
+          {/* Savings Goals */}
+          <GlassCard className="p-6" hover={false}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-white">Savings Goals</h2>
+              <Link
+                href="/savings-goals"
+                className="text-teal-400 hover:text-teal-300 text-sm font-medium transition-colors"
+              >
+                View all
+              </Link>
+            </div>
+            {savingsGoals.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-white/40 mb-3">No savings goals yet</p>
+                <Link
+                  href="/savings-goals"
+                  className="text-teal-400 hover:text-teal-300 text-sm font-medium"
+                >
+                  Create your first goal
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {savingsGoals.filter(g => !g.isCompleted).slice(0, 3).map((goal) => (
+                  <div key={goal.id} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-medium">{goal.name}</span>
+                      <span className="text-teal-400 text-sm">
+                        ${goal.currentAmount.toFixed(0)} / ${goal.targetAmount.toFixed(0)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-500"
+                        style={{ width: `${Math.min(goal.progressPercentage, 100)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-white/40">{goal.progressPercentage.toFixed(0)}% complete</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </GlassCard>
+
+          {/* Upcoming Recurring */}
+          <GlassCard className="p-6" hover={false}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-white">Upcoming Bills</h2>
+              <Link
+                href="/recurring-transactions"
+                className="text-teal-400 hover:text-teal-300 text-sm font-medium transition-colors"
+              >
+                View all
+              </Link>
+            </div>
+            {recurringTransactions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-white/40 mb-3">No recurring transactions</p>
+                <Link
+                  href="/recurring-transactions"
+                  className="text-teal-400 hover:text-teal-300 text-sm font-medium"
+                >
+                  Add recurring transaction
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recurringTransactions
+                  .filter(rt => rt.isActive)
+                  .sort((a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime())
+                  .slice(0, 4)
+                  .map((rt) => (
+                    <div key={rt.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50">
+                      <div>
+                        <p className="text-white font-medium">{rt.description}</p>
+                        <p className="text-xs text-white/40">
+                          Due {new Date(rt.nextDueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} • {rt.frequency}
+                        </p>
+                      </div>
+                      <span className={`font-semibold ${rt.type === "Income" ? "text-emerald-400" : "text-rose-400"}`}>
+                        {rt.type === "Income" ? "+" : "-"}${rt.amount.toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
               </div>
             )}
           </GlassCard>
