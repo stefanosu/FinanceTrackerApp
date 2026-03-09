@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
+import ExportDropdown from "../components/ExportDropdown";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5280";
 
@@ -134,8 +135,11 @@ export default function ExpensesPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">All Expenses</h1>
-          <p className="text-gray-500">{expenses.length} total expenses</p>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">All Expenses</h1>
+            <p className="text-gray-500">{expenses.length} total expenses</p>
+          </div>
+          <ExportDropdown type="expenses" />
         </div>
 
         {expensesLoading ? (
