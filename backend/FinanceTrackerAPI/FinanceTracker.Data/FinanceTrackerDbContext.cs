@@ -17,6 +17,8 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
         public DbSet<ExpensePaymentMethod> ExpensePaymentMethods { get; set; }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<RecurringTransaction> RecurringTransactions { get; set; }
+        public DbSet<SavingsGoal> SavingsGoals { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +31,8 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
             modelBuilder.Entity<Expense>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<Account>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<Transaction>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<RecurringTransaction>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<SavingsGoal>().HasQueryFilter(e => !e.IsDeleted);
         }
     }
 }
