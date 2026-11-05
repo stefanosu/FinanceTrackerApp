@@ -104,6 +104,7 @@ npm run dev
 | `/api/Account` | GET/POST | Account management |
 | `/api/Analytics/summary` | GET | Financial analytics |
 | `/api/EmotionalAnalytics/summary` | GET | Emotional spending insights |
+| `/api/Household` | GET/POST | Family household management |
 | `/api/BudgetAssistant/chat` | POST | AI assistant |
 
 ## Project Structure
@@ -142,7 +143,7 @@ finance-tracker-app/
 - [x] Recurring transactions
 - [x] Export to CSV/PDF
 - [x] Emotional spending analysis
-- [ ] Family budgeting features
+- [x] Family budgeting features
 - [ ] Mobile app (React Native)
 
 ## License
