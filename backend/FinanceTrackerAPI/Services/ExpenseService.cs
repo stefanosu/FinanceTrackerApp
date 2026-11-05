@@ -63,7 +63,8 @@ namespace backend.Services
                 SubCategory = dto.SubCategory ?? string.Empty,
                 PaymentMethod = dto.PaymentMethod ?? string.Empty,
                 Notes = dto.Notes ?? string.Empty,
-                UserId = userId ?? 0
+                UserId = userId ?? 0,
+                Mood = ParseMood(dto.Mood)
             };
 
             await _context.Expenses.AddAsync(expense);
@@ -100,6 +101,8 @@ namespace backend.Services
                 existingExpense.PaymentMethod = dto.PaymentMethod;
             if (dto.Notes != null)
                 existingExpense.Notes = dto.Notes;
+            if (dto.Mood != null)
+                existingExpense.Mood = ParseMood(dto.Mood);
 
             await _context.SaveChangesAsync();
 
@@ -138,8 +141,20 @@ namespace backend.Services
                 Category = expense.Category,
                 SubCategory = expense.SubCategory,
                 PaymentMethod = expense.PaymentMethod,
-                Notes = expense.Notes
+                Notes = expense.Notes,
+                Mood = expense.Mood?.ToString()
             };
+        }
+
+        private static Mood? ParseMood(string? moodString)
+        {
+            if (string.IsNullOrEmpty(moodString))
+                return null;
+
+            if (Enum.TryParse<Mood>(moodString, ignoreCase: true, out var mood))
+                return mood;
+
+            return null;
         }
     }
 }

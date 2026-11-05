@@ -14,5 +14,6 @@ namespace FinanceTrackerAPI.Services.Dtos
         public string? SubCategory { get; set; }
         public string? PaymentMethod { get; set; }
         public string? Notes { get; set; }
+        public string? Mood { get; set; }
     }
 }

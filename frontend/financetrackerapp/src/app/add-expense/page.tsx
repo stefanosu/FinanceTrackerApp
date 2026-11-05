@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import MoodPicker from "../components/ui/MoodPicker";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5280";
 
@@ -30,6 +31,7 @@ interface CreateExpenseData {
   paymentMethod: string;
   notes: string;
   userId: number;
+  mood?: string;
 }
 
 async function fetchCurrentUser(): Promise<User> {
@@ -84,6 +86,7 @@ export default function AddExpensePage() {
     subCategory: "",
     paymentMethod: "Credit Card",
     notes: "",
+    mood: "",
   });
   const [error, setError] = useState("");
 
@@ -146,6 +149,7 @@ export default function AddExpensePage() {
       amount: parseFloat(formData.amount),
       date: new Date(formData.date).toISOString(),
       userId: user.id,
+      mood: formData.mood || undefined,
     });
   };
 
@@ -319,6 +323,12 @@ export default function AddExpensePage() {
               placeholder="Any additional notes..."
             />
           </div>
+
+          <MoodPicker
+            value={formData.mood}
+            onChange={(mood) => setFormData((prev) => ({ ...prev, mood }))}
+            variant="light"
+          />
 
           <div className="flex justify-end space-x-4 pt-4">
             <Link

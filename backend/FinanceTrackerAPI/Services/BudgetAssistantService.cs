@@ -147,6 +147,29 @@ namespace FinanceTrackerAPI.Services
                 else if (changePercent < -10) spendingTrend = "decreasing";
             }
 
+            // Get emotional spending data
+            var allExpenses = await _context.Expenses
+                .Where(e => e.UserId == userId.Value && e.Date >= startOfMonth)
+                .ToListAsync();
+
+            var moodExpenses = allExpenses.Where(e => e.Mood != null).ToList();
+            var percentageWithMoodTracked = allExpenses.Count > 0
+                ? Math.Round((decimal)moodExpenses.Count / allExpenses.Count * 100, 1)
+                : 0;
+
+            var spendingByMood = moodExpenses
+                .GroupBy(e => e.Mood!.Value.ToString())
+                .Select(g => new MoodSpending
+                {
+                    Mood = g.Key,
+                    Amount = g.Sum(e => e.Amount),
+                    TransactionCount = g.Count()
+                })
+                .OrderByDescending(m => m.Amount)
+                .ToList();
+
+            var highestSpendingMood = spendingByMood.FirstOrDefault()?.Mood ?? string.Empty;
+
             return new FinancialContextDto
             {
                 TotalBalance = totalBalance,
@@ -155,7 +178,10 @@ namespace FinanceTrackerAPI.Services
                 SavingsRate = savingsRate,
                 TopCategories = categorySpending,
                 RecentExpenses = recentExpenses,
-                SpendingTrend = spendingTrend
+                SpendingTrend = spendingTrend,
+                SpendingByMood = spendingByMood,
+                HighestSpendingMood = highestSpendingMood,
+                PercentageWithMoodTracked = percentageWithMoodTracked
             };
         }
 
@@ -192,6 +218,25 @@ namespace FinanceTrackerAPI.Services
                 {
                     sb.AppendLine($"  - {exp.Name}: ${exp.Amount:N2} ({exp.Category}) on {exp.Date:MMM dd}");
                 }
+                sb.AppendLine();
+            }
+
+            // Add emotional spending context
+            if (context.SpendingByMood.Count > 0)
+            {
+                sb.AppendLine("Emotional spending patterns this month:");
+                sb.AppendLine($"  - {context.PercentageWithMoodTracked}% of expenses have mood tracked");
+                foreach (var mood in context.SpendingByMood)
+                {
+                    sb.AppendLine($"  - When feeling {mood.Mood}: ${mood.Amount:N2} ({mood.TransactionCount} transactions)");
+                }
+                if (!string.IsNullOrEmpty(context.HighestSpendingMood))
+                {
+                    sb.AppendLine($"  - Highest spending mood: {context.HighestSpendingMood}");
+                }
+                sb.AppendLine();
+                sb.AppendLine("When discussing emotional spending, be empathetic and non-judgmental.");
+                sb.AppendLine("Help the user understand emotional spending triggers and suggest mindful spending practices.");
             }
 
             return sb.ToString();

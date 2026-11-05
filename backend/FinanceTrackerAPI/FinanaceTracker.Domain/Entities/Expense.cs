@@ -2,6 +2,17 @@ using System;
 
 namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
 {
+    public enum Mood
+    {
+        Neutral = 0,
+        Happy = 1,
+        Stressed = 2,
+        Sad = 3,
+        Anxious = 4,
+        Bored = 5,
+        Excited = 6
+    }
+
     public class Expense : ISoftDeletable
     {
         public int Id { get; set; }
@@ -14,6 +25,9 @@ namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
         public required string PaymentMethod { get; set; }
         public required string Notes { get; set; }
         public required int UserId { get; set; }
+
+        // Emotional tracking - nullable for existing expenses
+        public Mood? Mood { get; set; }
 
         // Soft delete fields
         public bool IsDeleted { get; set; } = false;

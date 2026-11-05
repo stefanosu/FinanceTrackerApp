@@ -7,6 +7,8 @@ import Link from "next/link";
 import SpendingPieChart from "../components/charts/SpendingPieChart";
 import MonthComparisonChart from "../components/charts/MonthComparisonChart";
 import MonthlyTrendChart from "../components/charts/MonthlyTrendChart";
+import EmotionalSpendingChart from "../components/charts/EmotionalSpendingChart";
+import { useEmotionalInsights } from "../hooks/useEmotionalAnalytics";
 import BudgetAssistant from "../components/chat/BudgetAssistant";
 import AnimatedCounter from "../components/ui/AnimatedCounter";
 import GlassCard from "../components/ui/GlassCard";
@@ -140,6 +142,8 @@ export default function DashboardPage() {
     queryFn: fetchAccounts,
     enabled: !!user,
   });
+
+  const { data: emotionalInsights } = useEmotionalInsights(undefined, undefined, !!user);
 
   useEffect(() => {
     if (userError) {
@@ -485,6 +489,33 @@ export default function DashboardPage() {
               Spending by Category
             </h2>
             <SpendingPieChart enabled={!!user} />
+          </GlassCard>
+
+          {/* Emotional Spending Analysis */}
+          <GlassCard className="p-6" hover={false}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <span>{"\u{1F9E0}"}</span>
+                Emotional Spending
+              </h2>
+              {emotionalInsights && emotionalInsights.percentageWithMoodTracked > 0 && (
+                <span className="text-xs text-white/40 bg-slate-700 px-2 py-1 rounded-full">
+                  {emotionalInsights.percentageWithMoodTracked.toFixed(0)}% tracked
+                </span>
+              )}
+            </div>
+            <EmotionalSpendingChart enabled={!!user} />
+            {emotionalInsights && emotionalInsights.highestSpendingMood && (
+              <div className="mt-4 p-3 rounded-lg bg-slate-700/50 border border-slate-600/50">
+                <p className="text-sm text-white/60">
+                  You spend the most when feeling{" "}
+                  <span className="text-purple-400 font-medium">
+                    {emotionalInsights.highestSpendingMood.toLowerCase()}
+                  </span>
+                  {" "}(${emotionalInsights.highestSpendingMoodAmount.toFixed(2)} total)
+                </p>
+              </div>
+            )}
           </GlassCard>
 
           {/* Month Comparison */}
