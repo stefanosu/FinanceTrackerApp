@@ -19,6 +19,8 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<RecurringTransaction> RecurringTransactions { get; set; }
         public DbSet<SavingsGoal> SavingsGoals { get; set; }
+        public DbSet<Household> Households { get; set; }
+        public DbSet<HouseholdMember> HouseholdMembers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,6 +35,38 @@ namespace FinanceTrackerAPI.FinanceTracker.Data
             modelBuilder.Entity<Transaction>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<RecurringTransaction>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<SavingsGoal>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<Household>().HasQueryFilter(e => !e.IsDeleted);
+
+            // Household relationships
+            modelBuilder.Entity<Household>()
+                .HasOne(h => h.Owner)
+                .WithMany()
+                .HasForeignKey(h => h.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HouseholdMember>()
+                .HasOne(hm => hm.Household)
+                .WithMany(h => h.Members)
+                .HasForeignKey(hm => hm.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<HouseholdMember>()
+                .HasOne(hm => hm.User)
+                .WithMany()
+                .HasForeignKey(hm => hm.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique constraint on invite code
+            modelBuilder.Entity<Household>()
+                .HasIndex(h => h.InviteCode)
+                .IsUnique();
+
+            // Expense to Household relationship
+            modelBuilder.Entity<Expense>()
+                .HasOne(e => e.Household)
+                .WithMany()
+                .HasForeignKey(e => e.HouseholdId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

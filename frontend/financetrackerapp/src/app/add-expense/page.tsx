@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import MoodPicker from "../components/ui/MoodPicker";
+import { useHousehold } from "../hooks/useHousehold";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5280";
 
@@ -32,6 +33,7 @@ interface CreateExpenseData {
   notes: string;
   userId: number;
   mood?: string;
+  isShared?: boolean;
 }
 
 async function fetchCurrentUser(): Promise<User> {
@@ -87,6 +89,7 @@ export default function AddExpensePage() {
     paymentMethod: "Credit Card",
     notes: "",
     mood: "",
+    isShared: false,
   });
   const [error, setError] = useState("");
 
@@ -105,6 +108,9 @@ export default function AddExpensePage() {
     queryFn: fetchCategories,
     enabled: !!user,
   });
+
+  const { data: householdData } = useHousehold(!!user);
+  const hasHousehold = householdData?.hasHousehold ?? false;
 
   const mutation = useMutation({
     mutationFn: createExpense,
@@ -150,6 +156,7 @@ export default function AddExpensePage() {
       date: new Date(formData.date).toISOString(),
       userId: user.id,
       mood: formData.mood || undefined,
+      isShared: formData.isShared,
     });
   };
 
@@ -329,6 +336,30 @@ export default function AddExpensePage() {
             onChange={(mood) => setFormData((prev) => ({ ...prev, mood }))}
             variant="light"
           />
+
+          {hasHousehold && (
+            <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+              <div>
+                <p className="font-medium text-gray-900">Share with Household</p>
+                <p className="text-sm text-gray-500">
+                  This expense will be visible to all household members
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, isShared: !prev.isShared }))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  formData.isShared ? "bg-indigo-600" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formData.isShared ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          )}
 
           <div className="flex justify-end space-x-4 pt-4">
             <Link

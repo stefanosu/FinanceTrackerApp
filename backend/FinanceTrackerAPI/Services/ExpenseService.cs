@@ -27,22 +27,52 @@ namespace backend.Services
             if (userId == null)
                 return Enumerable.Empty<ExpenseDto>();
 
+            // Get user's household if any
+            var userHouseholdId = await GetUserHouseholdIdAsync(userId.Value);
+
+            // Get user's own expenses + shared household expenses
             var expenses = await _context.Expenses
-                .Where(e => e.UserId == userId.Value)
+                .Include(e => e.Household)
+                .Where(e => e.UserId == userId.Value ||
+                           (userHouseholdId != null && e.HouseholdId == userHouseholdId))
                 .ToListAsync();
 
-            return expenses.Select(MapToDto);
+            // Get user info for owner names
+            var userIds = expenses.Select(e => e.UserId).Distinct().ToList();
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => $"{u.FirstName} {u.LastName}");
+
+            return expenses.Select(e => MapToDto(e, users.GetValueOrDefault(e.UserId, "Unknown")));
+        }
+
+        private async Task<int?> GetUserHouseholdIdAsync(int userId)
+        {
+            var membership = await _context.HouseholdMembers
+                .FirstOrDefaultAsync(hm => hm.UserId == userId);
+            return membership?.HouseholdId;
         }
 
         public async Task<ExpenseDto> GetExpenseByIdAsync(int id)
         {
             var userId = _currentUserService.GetUserId();
-            var expense = await _context.Expenses.FindAsync(id);
+            var userHouseholdId = userId != null ? await GetUserHouseholdIdAsync(userId.Value) : null;
 
-            if (expense == null || (userId != null && expense.UserId != userId.Value))
+            var expense = await _context.Expenses
+                .Include(e => e.Household)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            // Allow access if user owns expense OR expense is shared with user's household
+            var canAccess = expense != null && (
+                expense.UserId == userId ||
+                (userHouseholdId != null && expense.HouseholdId == userHouseholdId)
+            );
+
+            if (expense == null || !canAccess)
                 throw new NotFoundException("Expense", id);
 
-            return MapToDto(expense);
+            var owner = await _context.Users.FindAsync(expense.UserId);
+            return MapToDto(expense, owner != null ? $"{owner.FirstName} {owner.LastName}" : "Unknown");
         }
 
         public async Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto)
@@ -51,6 +81,17 @@ namespace backend.Services
                 throw new ValidationException("Expense cannot be null.");
 
             var userId = _currentUserService.GetUserId();
+            if (userId == null)
+                throw new ValidationException("User not authenticated");
+
+            // Get household ID if sharing
+            int? householdId = null;
+            if (dto.IsShared)
+            {
+                householdId = await GetUserHouseholdIdAsync(userId.Value);
+                if (householdId == null)
+                    throw new ValidationException("You must be a member of a household to share expenses");
+            }
 
             // Map DTO to entity
             var expense = new Expense
@@ -63,14 +104,16 @@ namespace backend.Services
                 SubCategory = dto.SubCategory ?? string.Empty,
                 PaymentMethod = dto.PaymentMethod ?? string.Empty,
                 Notes = dto.Notes ?? string.Empty,
-                UserId = userId ?? 0,
-                Mood = ParseMood(dto.Mood)
+                UserId = userId.Value,
+                Mood = ParseMood(dto.Mood),
+                HouseholdId = householdId
             };
 
             await _context.Expenses.AddAsync(expense);
             await _context.SaveChangesAsync();
 
-            return MapToDto(expense);
+            var user = await _context.Users.FindAsync(userId.Value);
+            return MapToDto(expense, user != null ? $"{user.FirstName} {user.LastName}" : "Unknown");
         }
 
         public async Task<ExpenseDto> UpdateExpenseAsync(int id, UpdateExpenseDto dto)
@@ -103,10 +146,25 @@ namespace backend.Services
                 existingExpense.Notes = dto.Notes;
             if (dto.Mood != null)
                 existingExpense.Mood = ParseMood(dto.Mood);
+            if (dto.IsShared.HasValue)
+            {
+                if (dto.IsShared.Value)
+                {
+                    var householdId = await GetUserHouseholdIdAsync(userId!.Value);
+                    if (householdId == null)
+                        throw new ValidationException("You must be a member of a household to share expenses");
+                    existingExpense.HouseholdId = householdId;
+                }
+                else
+                {
+                    existingExpense.HouseholdId = null;
+                }
+            }
 
             await _context.SaveChangesAsync();
 
-            return MapToDto(existingExpense);
+            var user = await _context.Users.FindAsync(existingExpense.UserId);
+            return MapToDto(existingExpense, user != null ? $"{user.FirstName} {user.LastName}" : "Unknown");
         }
 
         public async Task<bool> DeleteExpenseAsync(int id)
@@ -129,7 +187,7 @@ namespace backend.Services
         /// Maps an Expense entity to ExpenseDto.
         /// Centralizes mapping logic and ensures sensitive fields are excluded.
         /// </summary>
-        private static ExpenseDto MapToDto(Expense expense)
+        private static ExpenseDto MapToDto(Expense expense, string ownerName = "")
         {
             return new ExpenseDto
             {
@@ -142,7 +200,10 @@ namespace backend.Services
                 SubCategory = expense.SubCategory,
                 PaymentMethod = expense.PaymentMethod,
                 Notes = expense.Notes,
-                Mood = expense.Mood?.ToString()
+                Mood = expense.Mood?.ToString(),
+                HouseholdId = expense.HouseholdId,
+                IsShared = expense.HouseholdId != null,
+                OwnerName = ownerName
             };
         }
 

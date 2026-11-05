@@ -219,6 +219,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<IEmotionalAnalyticsService, EmotionalAnalyticsService>();
+builder.Services.AddScoped<IHouseholdService, HouseholdService>();
 builder.Services.AddScoped<IBudgetAssistantService, BudgetAssistantService>();
 builder.Services.AddHttpClient();
 

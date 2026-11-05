@@ -81,6 +81,9 @@ namespace FinanceTrackerAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("HouseholdId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -107,6 +110,8 @@ namespace FinanceTrackerAPI.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("HouseholdId");
 
                     b.ToTable("Expenses");
                 });
@@ -175,6 +180,73 @@ namespace FinanceTrackerAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ExpenseSubCategories");
+                });
+
+            modelBuilder.Entity("FinanceTrackerAPI.FinanceTracker.Domain.Entities.Household", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InviteCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InviteCode")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Households");
+                });
+
+            modelBuilder.Entity("FinanceTrackerAPI.FinanceTracker.Domain.Entities.HouseholdMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("HouseholdId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HouseholdId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("HouseholdMembers");
                 });
 
             modelBuilder.Entity("FinanceTrackerAPI.FinanceTracker.Domain.Entities.RecurringTransaction", b =>
@@ -374,6 +446,51 @@ namespace FinanceTrackerAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("FinanceTrackerAPI.FinanceTracker.Domain.Entities.Expense", b =>
+                {
+                    b.HasOne("FinanceTrackerAPI.FinanceTracker.Domain.Entities.Household", "Household")
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Household");
+                });
+
+            modelBuilder.Entity("FinanceTrackerAPI.FinanceTracker.Domain.Entities.Household", b =>
+                {
+                    b.HasOne("FinanceTrackerAPI.FinanceTracker.Domain.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("FinanceTrackerAPI.FinanceTracker.Domain.Entities.HouseholdMember", b =>
+                {
+                    b.HasOne("FinanceTrackerAPI.FinanceTracker.Domain.Entities.Household", "Household")
+                        .WithMany("Members")
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FinanceTrackerAPI.FinanceTracker.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Household");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FinanceTrackerAPI.FinanceTracker.Domain.Entities.Household", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

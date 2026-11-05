@@ -29,6 +29,10 @@ namespace FinanceTrackerAPI.FinanceTracker.Domain.Entities
         // Emotional tracking - nullable for existing expenses
         public Mood? Mood { get; set; }
 
+        // Household sharing - if set, expense is shared with household
+        public int? HouseholdId { get; set; }
+        public Household? Household { get; set; }
+
         // Soft delete fields
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }

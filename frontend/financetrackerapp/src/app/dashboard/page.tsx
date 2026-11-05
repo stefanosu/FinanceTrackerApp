@@ -9,6 +9,7 @@ import MonthComparisonChart from "../components/charts/MonthComparisonChart";
 import MonthlyTrendChart from "../components/charts/MonthlyTrendChart";
 import EmotionalSpendingChart from "../components/charts/EmotionalSpendingChart";
 import { useEmotionalInsights } from "../hooks/useEmotionalAnalytics";
+import { useHouseholdSummary } from "../hooks/useHousehold";
 import BudgetAssistant from "../components/chat/BudgetAssistant";
 import AnimatedCounter from "../components/ui/AnimatedCounter";
 import GlassCard from "../components/ui/GlassCard";
@@ -144,6 +145,8 @@ export default function DashboardPage() {
   });
 
   const { data: emotionalInsights } = useEmotionalInsights(undefined, undefined, !!user);
+
+  const { data: householdSummary } = useHouseholdSummary(!!user);
 
   useEffect(() => {
     if (userError) {
@@ -373,6 +376,15 @@ export default function DashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             All Expenses
+          </Link>
+          <Link
+            href="/household"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700 text-white hover:bg-slate-600 transition-all duration-200 font-medium border border-slate-600"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Family
           </Link>
         </div>
 
@@ -720,6 +732,76 @@ export default function DashboardPage() {
               </div>
             )}
           </GlassCard>
+
+          {/* Family Budgeting */}
+          {householdSummary ? (
+            <GlassCard className="p-6" hover={false}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <span>{"\u{1F3E0}"}</span>
+                  {householdSummary.name}
+                </h2>
+                <Link
+                  href="/household"
+                  className="text-teal-400 hover:text-teal-300 text-sm font-medium transition-colors"
+                >
+                  Manage
+                </Link>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-emerald-400 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">{householdSummary.memberCount} Members</p>
+                      <p className="text-xs text-white/40">In your household</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-slate-700/50 text-center">
+                    <p className="text-sm text-white/60 mb-1">This Month</p>
+                    <p className="text-xl font-bold text-rose-400">
+                      ${householdSummary.thisMonthSharedExpenses.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-700/50 text-center">
+                    <p className="text-sm text-white/60 mb-1">All Time</p>
+                    <p className="text-xl font-bold text-white">
+                      ${householdSummary.totalSharedExpenses.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          ) : (
+            <GlassCard className="p-6" hover={false}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <span>{"\u{1F3E0}"}</span>
+                  Family Budgeting
+                </h2>
+              </div>
+              <div className="text-center py-6">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700 flex items-center justify-center">
+                  <span className="text-3xl">{"\u{1F46A}"}</span>
+                </div>
+                <p className="text-white/60 mb-4">
+                  Share expenses with family members
+                </p>
+                <Link
+                  href="/household"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-500 transition-colors font-medium"
+                >
+                  Get Started
+                </Link>
+              </div>
+            </GlassCard>
+          )}
         </div>
       </main>
 

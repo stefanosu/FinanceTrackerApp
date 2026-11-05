@@ -16,5 +16,8 @@ namespace FinanceTrackerAPI.Services.Dtos
         public string? PaymentMethod { get; set; }
         public string? Notes { get; set; }
         public string? Mood { get; set; }
+        public int? HouseholdId { get; set; }
+        public bool IsShared { get; set; }
+        public string? OwnerName { get; set; }
     }
 }
