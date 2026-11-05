@@ -12,6 +12,10 @@ A full-stack personal finance management application with AI-powered budgeting a
 - **Account Management** - Track balances across checking, savings, and credit accounts
 - **Analytics Dashboard** - Visualize spending patterns with interactive charts
 - **AI Budget Assistant** - Get personalized financial advice powered by Claude AI
+- **Emotional Spending Analysis** - Track mood when spending and identify emotional triggers
+- **Recurring Transactions** - Manage bills and recurring income with automatic tracking
+- **Savings Goals** - Set and track progress toward financial targets
+- **Export Data** - Download expenses and transactions as CSV or PDF
 - **Secure Authentication** - JWT-based auth with HTTP-only cookies
 
 ## Tech Stack
@@ -99,6 +103,7 @@ npm run dev
 | `/api/Expense` | GET/POST | Expense management |
 | `/api/Account` | GET/POST | Account management |
 | `/api/Analytics/summary` | GET | Financial analytics |
+| `/api/EmotionalAnalytics/summary` | GET | Emotional spending insights |
 | `/api/BudgetAssistant/chat` | POST | AI assistant |
 
 ## Project Structure
@@ -133,11 +138,11 @@ finance-tracker-app/
 
 ## Future Roadmap
 
-- [ ] Savings goals tracking
+- [x] Savings goals tracking
+- [x] Recurring transactions
+- [x] Export to CSV/PDF
+- [x] Emotional spending analysis
 - [ ] Family budgeting features
-- [ ] Emotional spending analysis
-- [ ] Export to CSV/PDF
-- [ ] Recurring transactions
 - [ ] Mobile app (React Native)
 
 ## License
